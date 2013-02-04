@@ -1,0 +1,73 @@
+#include <stdio.h> /* I/O functions: printf() ... */
+#include <stdlib.h> /* rand(), srand() */
+#include <unistd.h> /* read(), write() calls */
+#include <assert.h> /* assert() */
+#include <time.h>   /* time() */
+#include <signal.h> /* kill(), raise() and SIG???? */
+
+#include <sys/types.h> /* pid */
+#include <sys/wait.h> /* waitpid() */
+
+#include "common.h"
+
+int main(int argc, char *argv[])
+{
+	/* TODO: you probably need some or all the following variables. */
+	int i, seed;
+/*
+	pid_t cpid[NUM_PLAYERS];
+	int status, seed_fd[NUM_PLAYERS][2], score_fd[NUM_PLAYERS][2];
+	int score = 0, winning_score = 0, winner = 0;
+*/
+
+        /* TODO: Use the following variables in the exec system call. Using the
+	 * function sprintf and the arg1 variable you can pass the id parameter
+	 * to the children
+	 */
+/*
+	char arg0[] = "./shooter";
+	char arg1[10];
+	char *args[] = {arg0, arg1, NULL};
+*/
+	/* TODO: this loop can be used to initialize the communication
+	   with the players */
+	for (i = 0; i < NUM_PLAYERS; i++) {
+
+	}
+
+	for (i = 0; i < NUM_PLAYERS; i++) {
+		/* TODO: this loop will be used to spawn the processes
+		   that will simulate each player */
+	}
+
+	seed = time(NULL);
+	for (i = 0; i < NUM_PLAYERS; i++) {
+		seed++;
+		/* TODO: send the seed to the players */
+	}
+
+	/* TODO: get the results from the players, find the winner */
+	for (i = 0; i < NUM_PLAYERS; i++) {
+
+	}
+	printf("master: player %d WINS\n", winner);
+
+	/* TODO: signal only the winner */
+
+	/* TODO: signal all that this is the end of game */
+	for (i = 0; i < NUM_PLAYERS; i++) {
+
+	}
+
+	/* TODO: no more communication with the players */
+
+	printf("master: the game ends\n");
+
+	/* TODO: make sure that all resources are released and exit with
+	   success */
+	for (i = 0; i < NUM_PLAYERS; i++) {
+
+	}
+
+	return 0;
+}
