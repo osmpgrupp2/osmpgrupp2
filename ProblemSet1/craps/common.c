@@ -66,12 +66,15 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr)
 		id, (long)pid);
 
 	/* TODO: roll the dice, but before that get a seed from the parent */
-
+	
+	seed = seed_fd_rd;
 	srand(seed);
 	score = rand() % 10000;
 	
 	fprintf(stderr, "player %d: I scored %d (PID = %ld\n", id, score, (long)pid);
 	/* TODO: send my score back */
+
+	score_fd_wr = score;
 
 	/* spin while I wait for the results */
 	while (!results) ;

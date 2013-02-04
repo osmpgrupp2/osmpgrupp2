@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	int status; 
 	int seed_fd[NUM_PLAYERS][2];
 	int score_fd[NUM_PLAYERS][2];
-	//int score = 0, winning_score = 0, winner = 0;
+	int score = 0, winning_score = 0, winner = 0;
 
 
         /* TODO: Use the following variables in the exec system call. Using the
@@ -57,6 +57,8 @@ int main(int argc, char *argv[])
 	    //printf("Child process has started!\n");
 	    
 	    printf("nu är vi i barn %d\n",i);
+	    
+	    
 
 	    shooter(i, seed_fd[i][0], score_fd[i][1]);
 
@@ -100,10 +102,19 @@ int main(int argc, char *argv[])
 	for (i = 0; i < NUM_PLAYERS; i++) {
 		seed++;
 		/* TODO: send the seed to the players */
+		seed_fd[i][0] = seed;
 	}
 
 	/* TODO: get the results from the players, find the winner */
 	for (i = 0; i < NUM_PLAYERS; i++) {
+	  
+	  
+	  score = score_fd[i][0];
+	  
+	  if (score>winning_score){
+	    winning_score = score;
+	    winner = i;
+	  }
 
 	}
 	printf("master: player %d WINS\n", winner);
