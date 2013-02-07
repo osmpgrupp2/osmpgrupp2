@@ -129,13 +129,17 @@ int main(int argc, char *argv[])
 	/* TODO: no more communication with the players */
 
 	printf("master: the game ends\n");
-
+	for (i = 0; i < NUM_PLAYERS; i++) {
 	close(seed_fd[i]);
 	close(score_fd[i]);
 	
+	}
 	/* TODO: make sure that all resources are released and exit with
 	   success */
 	for (i = 0; i < NUM_PLAYERS; i++) {
+	  
+	  //wait(NULL);
+	  //while( -1 == waitpid(cpid[i], &status, 0)); 
 	  waitstat(cpid[i],status);
 	  //wait(cpid[i]);
 	  

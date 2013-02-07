@@ -29,6 +29,7 @@ void end_handler(int signum)
     results = 1;
     
   }
+  
   signal(signum, end_handler);
 }
 
@@ -98,7 +99,8 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr)
 		id, (long)pid);
 
 	/* TODO: free resources and exit with success */
-	
+	close(seed_fd_rd);
+	close(score_fd_wr);
 
 	exit(EXIT_SUCCESS);
 }
