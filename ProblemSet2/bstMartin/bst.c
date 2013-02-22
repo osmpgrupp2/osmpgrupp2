@@ -39,7 +39,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-
+#include <assert.h>
 #include "bst.h"
 
 
@@ -61,27 +61,43 @@ search(struct bst_node** root, comparator compare, void* data)
     /* TODO: For the Step 2 you will have to make this function thread-safe */
     parent = root;
     struct bst_node** node = root;
-    if(*node != NULL){
-        pthread_mutex_lock(&(*node)->mutexNODE);
-        while (*node != NULL) {
-            int compare_result = compare(data, (*node)->data);
-            if (compare_result < 0){
-                if(*parent != NULL){
-                    pthread_mutex_unlock(&(*parent)->mutexNODE);
-                }
-                parent = node;
-                node = &(*node)->left;
+
+    /********************************
+     if(*node != NULL){
+         assert(pthread_mutex_lock(&(*node)->mutexNODE) == 0);
+    }
+    *******************************/
+
+    while (*node != NULL) {
+        /*********************************/
+        assert(pthread_mutex_lock(&(*node)->mutexNODE) == 0);
+        /*********************************/
+
+        int compare_result = compare(data, (*node)->data);
+        if (compare_result < 0) {
+
+            /********************************************/
+            if(*parent != NULL){
+                assert(pthread_mutex_unlock(&(*parent)->mutexNODE) == 0);
             }
-            else if (compare_result > 0){
-                if(*parent != NULL){
-                    pthread_mutex_unlock(&(*parent)->mutexNODE);
-                }
-                parent = node;
-                node = &(*node)->right;
-            }
-            else
-                break;
+            /********************************************/
+
+            parent = node;
+            node = &(*node)->left;
         }
+        else if (compare_result > 0) {
+
+            /********************************************/
+            if(*parent != NULL){
+                assert(pthread_mutex_unlock(&(*parent)->mutexNODE) == 0);
+            }
+            /********************************************/
+
+            parent = node;
+            node = &(*node)->right;
+        }
+        else
+            break;
     }
     return node;
 }
@@ -104,15 +120,15 @@ node_delete_aux(struct bst_node** node)
         // eftersom vänster barn inte finns kan vi använda höger barn
         *node = (*node)->right;
         free_node(old_node);
-        if(*parent != NULL)
-            pthread_mutex_unlock(&(*parent)->mutexNODE);
-        // vänster barn finns och höger finns inte
+        // Vänster Barn Finns och höger finns inte
     } else if ((*node)->right == NULL) {
         // swap till vänster barn
         *node = (*node)->left;
         free_node(old_node);
+        /*********************************************/
         if(*parent != NULL)
-            pthread_mutex_unlock(&(*parent)->mutexNODE);
+            assert(pthread_mutex_unlock(&(*parent)->mutexNODE) == 0);
+        /*********************************************/ 
     } else {
         // vi vet att båda barn finns, vi måste alltså gå ett steg till
         // vänster och gå längst ner i dess högerbarn
@@ -126,13 +142,12 @@ node_delete_aux(struct bst_node** node)
 	void* temp = (*pred)->data;
 	(*pred)->data = (*node)->data;
 	(*node)->data = temp;
-        pthread_mutex_unlock(&(*parent)->mutexNODE);
+        assert(pthread_mutex_unlock(&(*parent)->mutexNODE) == 0);
         // vi har bytt info, och skall ta bort temp barnet men gör det
         // rekursivt eftersom den kan ha vänsterbarn
         node_delete_aux(pred);
-        pthread_mutex_unlock(&(*node)->mutexNODE);
+        assert(pthread_mutex_unlock(&(*node)->mutexNODE) == 0);    
     }
-    
 }
 
 /**
