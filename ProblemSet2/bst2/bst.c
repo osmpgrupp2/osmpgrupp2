@@ -78,13 +78,13 @@ search(struct bst_node** root, comparator compare, void* data)
             node = &(*node)->left;
         }
         else if (compare_result > 0) {
-            //parent = (*node);
+            parent = node;
             node = &(*node)->right;
         }
         else
             break;
     }
-    if(*parent){
+    if(parent){
         err(pthread_mutex_unlock(&(*parent)->mutexNODE));
     }
     return node;
