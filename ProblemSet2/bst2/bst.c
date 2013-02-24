@@ -56,7 +56,7 @@ pthread_mutex_t mutexCG;
 pthread_mutex_t mutexFG;
 void err(int i){
     if(i < 0)
-        printf("mutex_lock misslyckades\n");
+        fprintf(stderr,"mutex_lock misslyckades\n");
 }
 
 struct bst_node**
@@ -190,14 +190,14 @@ int
 node_delete_ts_fg(struct bst_node** root, comparator compare, void* data)
 {
     /* TODO: Fill-in the body of this function */
-
-    struct bst_node** node = search(root, compare, data);
-
+    
+    //struct bst_node** node = search(root, compare, data);
+    struct bst_node** node = root;
     if (node == NULL)
         return -1;
     else 
     {   
-        node_delete_aux(node);
+        node_delete(node, compare, data);
         return 0;
     }
 }
@@ -211,13 +211,14 @@ node_delete_ts_fg(struct bst_node** root, comparator compare, void* data)
 struct bst_node **
 tree_init(void)
 {
+
     struct bst_node** root = malloc(sizeof(*root));
     if (root == NULL) {
         fprintf(stderr, "Out of memory!\n");
         exit(1);
     }
     *root = NULL;
-
+    
     /* TODO: Initialize any global variables you use for the BST */
     pthread_mutex_init(&mutexCG, NULL);    
     pthread_mutex_init(&mutexFG, NULL);
@@ -234,6 +235,8 @@ tree_fini(struct bst_node ** root)
 {
     /* TODO: Free any global variables you used for the BST */
 
+    err(pthread_mutex_destroy(&mutexCG));
+    err(pthread_mutex_destroy(&mutexFG));
     if (root != NULL)
         free(root);
 }
@@ -296,7 +299,7 @@ free_node(struct bst_node* node)
         fprintf(stderr, "Invalid node\n");
     else {
         /* TODO: Finalize any per node variables you use for the BST */
-
+        err(pthread_mutex_destroy(&node->mutexNODE));
         free(node);
     }
 }
