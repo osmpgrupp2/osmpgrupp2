@@ -207,8 +207,8 @@ adder(A,B,CarryIn, Base) ->
     end.
 
 %% listAdder
-listAdder([],[],_, result) ->
-    result;
+listAdder([],[],_, Result) ->
+    Result;
 listAdder([A | Atl],[B | Btl],Base,{CarryIn,Result}) ->
     {CarryOut, Sum} = adder(A,B,CarryIn,Base),
    listAdder(Atl, Btl, Base, {CarryOut,[Sum] ++ Result}).
@@ -225,6 +225,10 @@ listAdder([A | Atl],[B | Btl],Base,{CarryIn,Result}) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%ATT TESTA: listigt, Nolligt, split, adder
+
+%%enkelt test listigt
+listigt_test() ->
+    ?_assertEqual(listigt(1234, 10, []), [1,2,3,4]).
 
 
 %%enkelt test för listAdder
@@ -252,7 +256,7 @@ compareLength({A,B}) -> if ((length(A)) =:= length(B)) ->
 nollListaHelp(0,L) ->
     L;
 nollListaHelp(N,L) ->
-    [0] ++ L.
+    nollListaHelp(N-1, [0] ++ L).
 
 %%returns a list of zeros with length N
 nollLista(N) ->
@@ -271,6 +275,14 @@ nolligt_zero_test() ->
     ListA = [1,2,3],
     ListB = [1,2,3,4,5,6],
     ?_assertEqual(nolligt(ListA, ListB, 4), {[0,0,0,0,0,0,1,2,3], [0,0,1,2,3,4,5,6]}).
+nolligt_zero2_test() ->
+    ListA = [1,2,3],
+    ListB = [1,2,3,4,5,6],
+    ?_assertEqual(nolligt(ListA, ListB, 2), {[0,1,2,3], [1,2,3,4,5,6]}).
+nolligt_zero3_test() ->
+    ListA = [1,2],
+    ListB = [1,2,3,4,5,6],
+    ?_assertEqual(nolligt(ListA, ListB, 3), {[0,0,0,1,2,3], [1,2,3,4,5,6]}).
 
 
 
