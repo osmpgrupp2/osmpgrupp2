@@ -113,9 +113,33 @@ lqr(L, N) ->
       N :: integer().
 
 
-split(L, N) ->
-    tbi.
+korta([L|LS], Len, Listan, Count) ->
+    if 	Len =:= Count ->
+	    {[L|LS], Listan};
+	true ->
+	    korta(LS, Len, [L]++Listan, Count+1)
+    end;
+korta([], _, Listan, _) ->
+    {[], Listan}.
+    
 
+
+dela([], _, T) ->
+    T;
+dela(L, Len, T) ->
+    Tuppler = korta(L, Len, [],0),
+    Listan = element(1, Tuppler),
+    Bit = element(2, Tuppler),
+    dela(Listan, Len, [Bit]++T).
+
+
+split(L, N) ->
+    Len = length(L) div N,
+    dela(L, Len, []).
+
+
+nolligt(A,B,N) ->
+    {A,B}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -123,6 +147,21 @@ split(L, N) ->
 %%			   EUnit Test Cases                                 %%
 %%                                                                          %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%creates a list, of random integer elements, of length N
+random_list(N) ->
+    [random:uniform() || _ <- lists:seq(1, N)].
+
+%%returns true if A and B have the same length, false otherwise
+compareLength({A,B}) -> if ((length(A)) =:= length(B)) ->
+				    true;
+			   true -> false end.
+
+%%checks that both lists are the same length
+nolligt_length_test_() -> 
+    TupleList = [{N,L} || N <- lists:seq(1,20), L <- lists:seq(1,4)],
+    [?_assertEqual(compareLength(nolligt(random_list(N), random_list(N), L)), true)  || {N,L} <- TupleList].
+    
 
 seqs_length_test_() ->
     %% The list [[], [1], [1,2], ..., [1,2, ..., N]] will allways have
@@ -175,7 +214,7 @@ split_concat_test_() ->
     %% original list.
     
     L = lists:seq(1,99),
-    [?_assertEqual(L, lists:concat(split(L,N))) || N <- lists:seq(1,133)].
+   [?_assertEqual(L, lists:concat(split(L,N))) || N <- lists:seq(1,133)].
 
 split_n_test_() ->
     %% Make sure the correct number of sublists are generated. 
