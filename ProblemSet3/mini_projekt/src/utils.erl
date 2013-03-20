@@ -140,7 +140,6 @@ split(L, N) ->
 
 %% @doc converts an integer to a list with the numbers in that base
 %% example: listigt(1234, 10, []) = [1,2,3,4].
-
 listigt(0, _, List) ->
 List;
 listigt(N, Bas, List) ->
@@ -148,7 +147,6 @@ listigt((N div Bas),Bas, [(N rem Bas)] ++ List).
 
 %% @doc adds zeros to list A and B so they are both the same length
 %% and their length is evenly dividable with N
-
 nolligt(A,B,N) ->
 if
 ((length(A)) =:= length(B)) ->
@@ -166,7 +164,6 @@ end.
 
 %% @doc Adds zeros to the beginning of X until X:s length is 
 %% evenly divisible by N
-
 add_zero(X,N)->
 if((length(X) rem N) =:= 0) ->
 X;
@@ -176,7 +173,6 @@ end.
 
 %% @doc Adds zeros to the beginning of A until A has the same 
 %% length as B.
-
 add_even(A,B)->
 if
 ((length(A)) =:= (length(B)))->
@@ -269,14 +265,20 @@ nolligt_length_test_() ->
     [?_assertEqual(compareLength(nolligt(random_list(N1), random_list(N2), L)), true)  || {N1,N2,L} <- TupleList].
 
 
+%%checks that zeros are concatinated correctly
+%%when list A is shorter than list B
+nolligt_zero_test() ->
+    ListA = [1,2,3],
+    ListB = [1,2,3,4,5,6],
+    ?_assertEqual(nolligt(ListA, ListB, 4), {[0,0,0,0,0,0,1,2,3], [0,0,1,2,3,4,5,6]}).
 
-%%testa när a mindre än b
-%%B2 = nollLista(x) ++ B,
-%%A2 = nollLista(x) ++ nollLista(lenhgth(B) -length(A)) ++ A,
 
-%%[?_assertEqual(nolligt(A,B,N), {A2,B2} || {A,B} <- randomListTuple
-%%A,B,N
-%%length B 
+
+%B2 = nollLista(length(B) rem N) ++ B,
+    %A2 = nollLista(length(B) rem N) ++ nollLista(lenhgth(B) -length(A)) ++ A,
+
+    %[?_assertEqual(nolligt(A,B,N), {A2,B2}) || {A,B} <- randomListTuple].
+ 
 
 %%{A,B} <- nolligt(A,B,N), N <-lists:seq(
  
