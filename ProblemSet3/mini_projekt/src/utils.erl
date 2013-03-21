@@ -206,16 +206,17 @@ adder(A,B,CarryIn, Base) ->
 	    {0,A + B + CarryIn}
     end.
 
-%% listAdder
-listAdder([],[],_, Result) ->
+%% listAdderHelp
+listAdderHelp([],[],_, Result) ->
     Result;
-listAdder([A | Atl],[B | Btl],Base,{CarryIn,Result}) ->
+listAdderHelp([A | Atl],[B | Btl],Base,{CarryIn,Result}) ->
     {CarryOut, Sum} = adder(A,B,CarryIn,Base),
-   listAdder(Atl, Btl, Base, {CarryOut,[Sum] ++ Result}).
+   listAdderHelp(Atl, Btl, Base, {CarryOut,[Sum] ++ Result}).
     
 
-
-
+%% listAdder
+listAdder(A,B,Base) ->
+    listAdderHelp(lists:reverse(A), lists:reverse(B), Base, {0, []}).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -233,14 +234,17 @@ listigt_test() ->
 
 %%enkelt test för listAdder
 listAdder_test() ->
-?_assertEqual(listAdder([1,2],[2,1], 10, {0,[]}), {0, [3,3]}).
+    ?_assertEqual(listAdder([1,2],[3,4], 10), {0, [4,6]}).
 %%enkelt test för listAdder
 listAdder2_test() ->
-?_assertEqual(listAdder([1,2],[2,1], 3, {0,[]}), {0, [1,1,0]}).
+    ?_assertEqual(listAdder([1,2],[1,1], 3), {0, [1,0,0]}).
 %%enkelt test för listAdder
 listAdder3_test() ->
-?_assertEqual(listAdder([1,2],[2,1], 11, {0,[]}), {0, [3,3]}).
-
+    ?_assertEqual(listAdder([5,2],[5,9], 11), {1, [0,0]}).
+listAdder4_test() ->
+    ?_assertEqual(listAdder([1,10,8,13],[14,6,0,3],16), {1, [0,0,9,0]}).
+listAdder5_test() ->
+    ?_assertEqual(listAdder([0,1,2,3,4,5],[6,7,8,9,0,1],10), {0, [6,9,1,2,4,6]}).
 
 
 %%creates a list, of random integer elements, of length N
@@ -283,21 +287,6 @@ nolligt_zero3_test() ->
     ListA = [1,2],
     ListB = [1,2,3,4,5,6],
     ?_assertEqual(nolligt(ListA, ListB, 3), {[0,0,0,1,2,3], [1,2,3,4,5,6]}).
-
-
-
-%B2 = nollLista(length(B) rem N) ++ B,
-    %A2 = nollLista(length(B) rem N) ++ nollLista(lenhgth(B) -length(A)) ++ A,
-
-    %[?_assertEqual(nolligt(A,B,N), {A2,B2}) || {A,B} <- randomListTuple].
- 
-
-%%{A,B} <- nolligt(A,B,N), N <-lists:seq(
- 
-
-%%testa när b mindre än a
-  
-
   
 
 seqs_length_test_() ->
