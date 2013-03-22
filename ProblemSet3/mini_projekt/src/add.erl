@@ -29,6 +29,17 @@ start(A,B,Base, Options) ->
     tbi.
 
 
+%% @doc Loop to receive results from all children and then kill them
+%% ChildArray is a vector with the pID of all children in the right order
+%% ResultArray is where the results from the children are stored
+%% The results are stored in the same order as the children
+%% Counter is the number of results that is left to receive
+-spec mainRecieverLoopiloop(ChildArray, ResultArray, Counter) -> ResultArray2 when
+      ChildArray::array(),
+      ResultArray::array(),
+      Counter::integer(),
+      ResultArray2::array().
+
 mainRecieverLoopiloop(_ChildArray, ResultArray, 0) ->
     ResultArray;
 mainRecieverLoopiloop(ChildArray, ResultArray, Counter) ->
@@ -39,7 +50,15 @@ mainRecieverLoopiloop(ChildArray, ResultArray, Counter) ->
     end. 
 
 
-%% hittar index för element N
+
+
+%% @doc Find the index of the element Item in the array Array
+-spec findArrayIndex(Item, Array, Index) -> Index2 when
+      Item::term(),
+      Array::array(),
+      Index::integer(),
+      Index2::integer().
+
 findArrayIndex(Item, Array, Index) ->
     case(array:get(Index, Array) =:= Item) of
 	true ->
@@ -48,10 +67,21 @@ findArrayIndex(Item, Array, Index) ->
 	    findArrayIndex(Item, Array, Index + 1)
     end.
 
-    
 
 
-%% @doc returnerar en array med piden till de spawnade barnen i rätt ordning
+
+%% @doc helpfunction to mainSpawner
+%% spawns children and returns an array with the pID
+%% of the children in the right order
+-spec mainSpawnerHelp(A, B, Index, ChildArray, Base, ParentPID) -> ChildArray2 when
+      A::nil() |[[integer()]], 
+      B::nil() | [[integer()]], 
+      Index::integer(), 
+      ChildArray::array(), 
+      Base::integer(), 
+      ParentPID::integer(),
+      ChildArray2::array.
+
 mainSpawnerHelp([], _,_ , ChildArray, _, _) ->
     ChildArray;
 mainSpawnerHelp([A | Atl],[B | Btl], 0, ChildArray, Base, ParentPID) ->
@@ -59,20 +89,49 @@ mainSpawnerHelp([A | Atl],[B | Btl], 0, ChildArray, Base, ParentPID) ->
 mainSpawnerHelp([A | Atl],[B | Btl],Index, ChildArray, Base, ParentPID) ->
     mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn(add, spawnChild, [A,B, ParentPID, array:get(Index - 1, ChildArray) ]), ChildArray), Base,ParentPID).
 
-%% @doc returnerar en array med piden till de spawnade barnen i rätt ordning
+
+
+
+
+%% @doc spawns children and returns an array with the pID
+%% of the children in the right order
+-spec mainSpawner(A, B, ChildArray, Base) -> ChildArray2 when
+      A::nil() | [[integer()]], 
+      B::nil() | [[integer()]],
+      ChildArray::array(), 
+      Base::integer(),
+      ChildArray2::array.
+
 mainSpawner(A,B,ChildArray,Base) ->
     mainSpawnerHelp(A,B,0,ChildArray, Base, self()).
 
 
-
-%% Barn process
+%% @doc spaws two babys that returns result
+%% waits for carryIn to know which result to
+%% send to parent and which carryOut to
+%% send to the next process
+-spec spawnChild(A,B,ParentPID, NextPID, Base) -> none() when
+      A::[integer()],
+      B::[integer()],
+      ParentPID::integer(),
+      NextPID::integer(),
+      Base::integer().
+      
 spawnChild(A,B, ParentPID, NextPID, Base) ->
-    spawn(add, spawnBaby, [A, B, 0, Base]),
-    spawn(add, spawnBaby, [A, B, 1, Base]),
+    spawn(add, spawnBaby, [A, B, 0, Base, self()]),
+    spawn(add, spawnBaby, [A, B, 1, Base, self()]),
     ResultArray = array:new(2),
     spawnChildReceiveLoop(ResultArray, ParentPID, NextPID).
 
-%% Barn processen väntar på meddelanden
+
+%% @doc receives messages from baby processes and prev. process
+%% saves results from children
+%% send result to parent and carryOut to next process
+%% when carryIn from prev. process is recieved
+-spec spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) -> none() when
+      ResultArray::array(),
+      ParentPID::integer(),
+      NextPID::integer().
 spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
     receive
 	{0, Baby, Result} ->
@@ -99,7 +158,15 @@ spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
     end.
 
 
-%% Baby process
-spawnBaby(A,B,CarryIn, Base) ->
+
+%% @doc calls the adding function and the sends the result to its parent
+-spec spawnBaby(A,B,CarryIn, Base, ParentPID) -> none() when
+      A::[integer()],
+      B::[integer()],
+      CarryIn::integer(),
+      Base::integer(),
+      ParentPID::integer().
+	      
+spawnBaby(A,B,CarryIn, Base, ParentPID) ->
     %%do some magic
-    {CarryIn, self(), result}.%someAdder(A,B, CarryIn, Base)}.
+    ParentPID ! {CarryIn, self(), result}.%someAdder(A,B, CarryIn, Base)}.
