@@ -113,93 +113,41 @@ lqr(L, N) ->
       N :: integer().
 
 
-korta([L|LS], Len, Listan, Count) ->
-    if 	Len =:= Count ->
-	    {[L|LS], Listan};
-	true ->
-	    korta(LS, Len, [L]++Listan, Count+1)
-    end;
-korta([], _, Listan, _) ->
-    {[], Listan}.
-    
-
-
-dela([], _, T) ->
-    T;
-dela(L, Len, T) ->
-    Tuppler = korta(L, Len, [],0),
-    Listan = element(1, Tuppler),
-    Bit = element(2, Tuppler),
-    dela(Listan, Len, [Bit]++T).
+dela(L, Q, 1, Acc, _) ->
+    [lists:sublist(L, 1, Q)]++Acc;
+dela(L, Q, Start, Acc, 0) ->
+    dela(L, Q, Start-Q, [lists:sublist(L, Start, Q)]++Acc, 0);
+dela(L, Q, Start, Acc, R) ->
+    if R-1 =:= 0 ->
+	    dela(L, Q-1, Start-Q+1, [lists:sublist(L, Start, Q)]++Acc, 0);
+       true -> dela(L, Q, Start-Q, [lists:sublist(L, Start, Q)]++Acc, R-1)
+		   end.
 
 
 split(L, N) ->
-    Len = length(L) div N,
-    dela(L, Len, []).
+    Len = length(L),
+    Q   = Len div N,
+    R   = Len rem N,
+    if R =:= 0 ->
+	    dela(L, Q, Len - Q+1, [], R);
+       true -> dela(L, Q+1, Len - Q, [], R) end.
 
 
-%% @doc converts an integer N to a list with the numbers 
-%% in the base Bas concatinated with List
-%% example: listigt(1234, 10, []) = [1,2,3,4].
-%% example: listigt(1234, 8, []) = [2,3,2,2]).
+
+
+
+
 listigt(0, _, List) ->
     List;
 listigt(N, Bas, List) ->
     listigt((N div Bas),Bas, [(N rem Bas)] ++ List).
 
-%% @doc adds zeros to list A and B so they are both the same length
-%% and their length is evenly dividable with N
-nolligt(A,B,N) ->
-if
-((length(A)) =:= length(B)) ->
-{add_zero(A,N),add_zero(B,N)};
-((length(A)) < (length(B))) ->
-B2 = add_zero(B,N),
-A2 = add_even(A,B2),
-{A2,B2};
-true ->
-A2 = add_zero(A,N),
-B2 = add_even(B,A2),
-{A2,B2}
-end.
+%% adder(A,B) ->
+%%     AR = lists:reverse(A),
+%%     BR = lists:reverse(B),
+%%     Len = lists:length(A),
 
 
-%% @doc Adds zeros to the beginning of X until X:s length is 
-%% evenly divisible by N
-add_zero(X,N)->
-if((length(X) rem N) =:= 0) ->
-X;
-true ->
-add_zero(([0]++X), N)
-end.
-
-%% @doc Adds zeros to the beginning of A until A has the same 
-%% length as B.
-add_even(A,B)->
-if
-((length(A)) =:= (length(B)))->
-A;
-true ->
-add_even(([0] ++ A),B)
-
-end.
-
-
-%%DAVIDS
-%%adder(A,B,CarryIn, Base) ->
-
-  %%  (AI = list_to_integer(A,Base)),
-    %%(BI = list_to_integer(B,Base)),
-    %%if
-%%	(AI + BI + CarryIn) >= 10->
-%%	    {1,(AI + BI + CarryIn) rem 10};
-%%	true ->
-%%	    {0,AI + BI + CarryIn}
-  %%  end.
-
-
-
-%% adder(A,B, CarryIn, Base) -> {carryOut, result}
 adder(A,B,CarryIn, Base) ->
     if
 	(A + B + CarryIn) >= Base->
@@ -209,16 +157,142 @@ adder(A,B,CarryIn, Base) ->
     end.
 
 %% listAdderHelp
-listAdderHelp([],[],_, Result) ->
+
+listAdderHelp([],[],_,Result) ->
     Result;
 listAdderHelp([A | Atl],[B | Btl],Base,{CarryIn,Result}) ->
     {CarryOut, Sum} = adder(A,B,CarryIn,Base),
-   listAdderHelp(Atl, Btl, Base, {CarryOut,[Sum] ++ Result}).
+   listAdder(Atl, Btl, Base, {CarryOut,[Sum] ++ Result}).
+
+% [Sum] ++ Result
+
+% listAdder
+listAdder(A,B,Base,Result) ->
+    listAdderHelp(lists:reverse(A), lists:reverse(B), Base, Result).
+
+    
+nolligt(A,B,N) ->
+    if
+	((length(A)) =:= length(B)) ->
+	    {A,B};
+	((length(A)) < (length(B))) ->
+	    B2 = add_zero(B,N),
+	    A2 = add_even(A,B2),
+	    {A2,B2};
+	true -> 
+	    A2 = add_zero(A,N),
+	    B2 = add_even(B,A2),
+	    {A2,B2}
+	end.
+       
+
+
+%% Print
+
+len(A, B) ->
+    Alen = length(A),
+    Blen = length(B),
+    if Alen > Blen ->
+	    Alen+1;
+       true -> Blen+1 end.
+
+repeat(Char, N) ->
+    [Char || _ <- lists:seq(1,N)].
+
+line(C, N) ->
+    repeat(C, N).
+
+print_list([]) ->
+    io:fwrite("~n");
+print_list([A|As]) ->
+    io:format("~p", [A]),
+    print_list(As).
+
+fix_len(List, N) ->
+    L = length(List),
+    N - L.
+
+	
+
+print(A, B, Res, C) ->
+    Lin  = line($-, len(A,B)+1),
+    Max  = length(Lin),
+    Alen = fix_len(A, Max),
+    Blen = fix_len(B, Max-1),
+    Rlen = fix_len(Res, Max),
+    Clen = fix_len(C, Max),
+    io:fwrite(line($ , Clen)),
+    print_list(C),
+    io:fwrite(line($ , Alen)),
+    print_list(A),
+    io:fwrite("+"),
+    io:fwrite(line($ , Blen)),
+    print_list(B),
+    io:fwrite(Lin),
+    io:fwrite("~n"),
+    io:fwrite(line($ , Rlen)),
+    print_list(Res).
+
     
 
-%% listAdder
-listAdder(A,B,Base) ->
-    listAdderHelp(lists:reverse(A), lists:reverse(B), Base, {0, []}).
+
+
+       
+	   
+
+%% skriv nå fint
+
+add_zero(X,N)-> 
+    if((length(X) rem  N) =:= 0) ->
+	    X;
+      true -> 
+	    add_zero(([0]++X), N)
+      end.
+  
+%% Skriv nå vajert.
+  
+add_even(A,B)->
+    if
+	((length(A)) =:= (length(B)))->
+	      A;
+	true ->
+	    add_even(([0] ++ A),B)
+	
+    end.    
+  
+    
+%% Hålla koll på så att alla additioner körs.
+
+wholeAddHelp(A,B) ->
+    AR = lists:reverse(A),
+    BR = lists:reverse(B),
+    {AR,BR}.
+
+
+wholeAddwhole(A,B,Base) ->
+    Len = length(A),
+    {[Ahd|Atl],[Bhd|Btl]} = wholeAddHelp(A,B), 
+    Result = listAdder(Ahd,Bhd,Base,{0,[]}),
+    io:format("Tjollahoppsansa ~p ~n",[Result]),
+    utils:wholeAdd(Atl,Btl,(Len-1),Result,Base).
+
+
+wholeAdd(_A,_B,0,Result,_Base) ->
+    Result;
+    
+wholeAdd([Ahd|Atl],[Bhd|Btl],Count, Result,Base) ->
+    {Carry,X} = Result,
+    io:format(" ~p ~n",[Result]),
+    {Carry2,X2} = listAdder(Ahd,Bhd,Base,{Carry,[]}),
+    wholeAdd(Atl,Btl,(Count-1),{Carry2,lists:append(X2,X)},Base).
+
+
+%from Base N to base 10
+
+nto10(I,Base) ->
+    integer_to_list(I,Base).
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -291,6 +365,7 @@ nolligt_zero3_test() ->
     ?_assertEqual(nolligt(ListA, ListB, 3), {[0,0,0,1,2,3], [1,2,3,4,5,6]}).
   
 
+
 seqs_length_test_() ->
     %% The list [[], [1], [1,2], ..., [1,2, ..., N]] will allways have
     %% length N+1.
@@ -337,24 +412,24 @@ filter_test() ->
     
     ?assertEqual(E, filter([P1,P2,P3], L)).
     
-%split_concat_test_() ->
+split_concat_test_() ->
     %% Make sure the result of concatenating the sublists equals the
     %% original list.
     
-%    L = lists:seq(1,99),
-%   [?_assertEqual(L, lists:concat(split(L,N))) || N <- lists:seq(1,133)].
+    L = lists:seq(1,99),
+    [?_assertEqual(L, lists:concat(split(L,N))) || N <- lists:seq(1,133)].
 
-%split_n_test_() ->
+split_n_test_() ->
     %% Make sure the correct number of sublists are generated. 
     
- %   M = 99,
- %   L = lists:seq(1,M),
- %   Num_of_lists = fun(List, N) when N =< length(List) ->
-%			   N;
-%		      (List, _) ->
-%			   length(List)
-%		   end,
- %   [?_assertEqual(Num_of_lists(L,N), length(split(L,N))) || N <- L].    
+    M = 99,
+    L = lists:seq(1,M),
+    Num_of_lists = fun(List, N) when N =< length(List) ->
+			   N;
+		      (List, _) ->
+			   length(List)
+		   end,
+    [?_assertEqual(Num_of_lists(L,N), length(split(L,N))) || N <- L].    
 
 
 expected_stat(L, N) when N =< length(L) ->
@@ -387,17 +462,17 @@ stat(N, M, LL) ->
     
     {{Num_N, N}, {Num_M, M}}.
 
-%split_stat_test_() ->
+split_stat_test_() ->
     %% Assure the list of sublists contains the correct number of
     %% lists of the two expected lengths.
 	
-%    Assert = fun(L,N) ->
-%		     {_, Q, _} = lqr(L,N), 
-%		     ?_assertEqual(expected_stat(L,N), stat(Q+1, Q, split(L,N))) 
-%	     end,
+    Assert = fun(L,N) ->
+		     {_, Q, _} = lqr(L,N), 
+		     ?_assertEqual(expected_stat(L,N), stat(Q+1, Q, split(L,N))) 
+	     end,
 	
     %% Generators can depend on other generator expressions, here N
     %% depends on the length of L.
     
-%    [Assert(L,N) ||  L <- seqs(33), N <- lists:seq(1,length(L)+5)].
+    [Assert(L,N) ||  L <- seqs(33), N <- lists:seq(1,length(L)+5)].
     
