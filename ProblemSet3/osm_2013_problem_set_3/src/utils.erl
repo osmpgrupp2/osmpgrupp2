@@ -112,29 +112,28 @@ lqr(L, N) ->
       T :: term(),
       N :: integer().
 
-korta([L|LS], Len, Listan, Count) ->
-    if 	Len =:= Count ->
-	    {[L|LS], Listan};
-	true ->
-	    korta(LS, Len, [L]++Listan, Count+1)
-    end;
-korta([], _, Listan, _) ->
-    {[], Listan}.
 
-
-
-dela([], _, T) ->
-    T;
-dela(L, Len, T) ->
-    Tuppler = korta(L, Len, [],0),
-    Listan = element(1, Tuppler),
-    Bit = element(2, Tuppler),
-    dela(Listan, Len, [Bit]++T).
+dela(L, Q, 1, Acc, _) ->
+    [lists:sublist(L, 1, Q)]++Acc;
+dela(L, Q, Start, Acc, 0) ->
+    dela(L, Q, Start-Q, [lists:sublist(L, Start, Q)]++Acc, 0);
+dela(L, Q, Start, Acc, R) ->
+    if R-1 =:= 0 ->
+	    dela(L, Q-1, Start-Q+1, [lists:sublist(L, Start, Q)]++Acc, 0);
+       true -> dela(L, Q, Start-Q, [lists:sublist(L, Start, Q)]++Acc, R-1)
+		   end.
 
 
 split(L, N) ->
-    Len = length(L) div N,
-    dela(L, Len, []).
+    Len = length(L),
+    Q   = Len div N,
+    R   = Len rem N,
+    if R =:= 0 ->
+	    dela(L, Q, Len - Q+1, [], R);
+       true -> dela(L, Q+1, Len - Q, [], R) end.
+
+
+
 
 
 
@@ -150,19 +149,26 @@ listigt(N, Bas, List) ->
 
 
 adder(A,B,CarryIn, Base) ->
-    
-    (AI = list_to_integer(A,Base)),
-    (BI = list_to_integer(B,Base)),
     if
-	(AI + BI + CarryIn) >= 10->
-	    {1,(AI + BI + CarryIn) rem 10};
-	true -> 
-	    {0,AI + BI + CarryIn}
-		end.
+	(A + B + CarryIn) >= Base->
+	    {1,(A + B + CarryIn) rem Base};
+	true ->
+	    {0,A + B + CarryIn}
+    end.
 
+%% listAdderHelp
 
+listAdderHelp([],[],_,Result) ->
+    Result;
+listAdderHelp([A | Atl],[B | Btl],Base,{CarryIn,Result}) ->
+    {CarryOut, Sum} = adder(A,B,CarryIn,Base),
+   listAdder(Atl, Btl, Base, {CarryOut,[Sum] ++ Result}).
 
+% [Sum] ++ Result
 
+% listAdder
+listAdder(A,B,Base,Result) ->
+    listAdderHelp(lists:reverse(A), lists:reverse(B), Base, Result).
 
     
 nolligt(A,B,N) ->
@@ -179,6 +185,58 @@ nolligt(A,B,N) ->
 	    {A2,B2}
 	end.
        
+
+
+%% Print
+
+len(A, B) ->
+    Alen = length(A),
+    Blen = length(B),
+    if Alen > Blen ->
+	    Alen+1;
+       true -> Blen+1 end.
+
+repeat(Char, N) ->
+    [Char || _ <- lists:seq(1,N)].
+
+line(C, N) ->
+    repeat(C, N).
+
+print_list([]) ->
+    io:fwrite("~n");
+print_list([A|As]) ->
+    io:format("~p", [A]),
+    print_list(As).
+
+fix_len(List, N) ->
+    L = length(List),
+    N - L.
+
+	
+
+print(A, B, Res, C) ->
+    Lin  = line($-, len(A,B)+1),
+    Max  = length(Lin),
+    Alen = fix_len(A, Max),
+    Blen = fix_len(B, Max-1),
+    Rlen = fix_len(Res, Max),
+    Clen = fix_len(C, Max),
+    io:fwrite(line($ , Clen)),
+    print_list(C),
+    io:fwrite(line($ , Alen)),
+    print_list(A),
+    io:fwrite("+"),
+    io:fwrite(line($ , Blen)),
+    print_list(B),
+    io:fwrite(Lin),
+    io:fwrite("~n"),
+    io:fwrite(line($ , Rlen)),
+    print_list(Res).
+
+    
+
+
+
        
 	   
 
@@ -201,7 +259,40 @@ add_even(A,B)->
 	    add_even(([0] ++ A),B)
 	
     end.    
-      
+  
+    
+%% Hålla koll på så att alla additioner körs.
+
+wholeAddHelp(A,B) ->
+    AR = lists:reverse(A),
+    BR = lists:reverse(B),
+    {AR,BR}.
+
+
+wholeAddwhole(A,B,Base) ->
+    Len = length(A),
+    {[Ahd|Atl],[Bhd|Btl]} = wholeAddHelp(A,B), 
+    Result = listAdder(Ahd,Bhd,Base,{0,[]}),
+    io:format("Tjollahoppsansa ~p ~n",[Result]),
+    utils:wholeAdd(Atl,Btl,(Len-1),Result,Base).
+
+
+wholeAdd(_A,_B,0,Result,_Base) ->
+    Result;
+    
+wholeAdd([Ahd|Atl],[Bhd|Btl],Count, Result,Base) ->
+    {Carry,X} = Result,
+    io:format(" ~p ~n",[Result]),
+    {Carry2,X2} = listAdder(Ahd,Bhd,Base,{Carry,[]}),
+    wholeAdd(Atl,Btl,(Count-1),{Carry2,lists:append(X2,X)},Base).
+
+
+%from Base N to base 10
+
+nto10(I,Base) ->
+    integer_to_list(I,Base).
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
