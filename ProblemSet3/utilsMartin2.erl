@@ -76,6 +76,13 @@ filter_collect(N,R) ->
 
 
 
+%% 1> L = [1,2,3,4,5,6,7,8,9,10].
+%% [1,2,3,4,5,6,7,8,9,10]
+%% 2> utils:split(L, 4).
+%% [[1,2],[3,4],[5,6,7],[8,9,10]]
+%% 3> lists:concat(utils:split(L,3)).
+%% [1,2,3,4,5,6,7,8,9,10]'''
+%% </div>
 lqr(L, N) ->
     Len = length(L),
 
@@ -86,6 +93,60 @@ lqr(L, N) ->
     R = Len rem N, 
     
     {Len, Q, R}. 
+
+len(A, B) ->
+    Alen = length(A),
+    Blen = length(B),
+    if Alen > Blen ->
+	    Alen+1;
+       true -> Blen+1 end.
+
+repeat(Char, N) ->
+    [Char || _ <- lists:seq(1,N)].
+
+line(C, N) ->
+    repeat(C, N).
+
+print_list([]) ->
+    io:fwrite("~n");
+print_list([A|As]) ->
+    io:format("~p", [A]),
+    print_list(As).
+
+fix_len(List, N) ->
+    L = length(List),
+    N - L.
+
+	
+
+print(A, B, Res, C) ->
+    Lin  = line($-, len(A,B)+1),
+    Max  = length(Lin),
+    Alen = fix_len(A, Max),
+    Blen = fix_len(B, Max-1),
+    Rlen = fix_len(Res, Max),
+    Clen = fix_len(C, Max),
+    io:fwrite(line($ , Clen)),
+    print_list(C),
+    io:fwrite(line($ , Alen)),
+    print_list(A),
+    io:fwrite("+"),
+    io:fwrite(line($ , Blen)),
+    print_list(B),
+    io:fwrite(Lin),
+    io:fwrite("~n"),
+    io:fwrite(line($ , Rlen)),
+    print_list(Res).
+
+    
+
+
+
+
+    
+    
+
+    
 
 %% @doc Split List into N Lists such that all Lists have approximately the same number of elements. 
 %% 
@@ -112,111 +173,25 @@ lqr(L, N) ->
       T :: term(),
       N :: integer().
 
-
-korta([L|LS], Len, Listan, Count) ->
-    if 	Len =:= Count ->
-	    {[L|LS], Listan};
-	true ->
-	    korta(LS, Len, [L]++Listan, Count+1)
-    end;
-korta([], _, Listan, _) ->
-    {[], Listan}.
-    
-
-
-dela([], _, T) ->
-    T;
-dela(L, Len, T) ->
-    Tuppler = korta(L, Len, [],0),
-    Listan = element(1, Tuppler),
-    Bit = element(2, Tuppler),
-    dela(Listan, Len, [Bit]++T).
+dela(L, Q, 1, Acc, _) ->
+    [lists:sublist(L, 1, Q)]++Acc;
+dela(L, Q, Start, Acc, 0) ->
+    dela(L, Q, Start-Q, [lists:sublist(L, Start, Q)]++Acc, 0);
+dela(L, Q, Start, Acc, R) ->
+    if R-1 =:= 0 ->
+	    dela(L, Q-1, Start-Q+1, [lists:sublist(L, Start, Q)]++Acc, 0);
+       true -> dela(L, Q, Start-Q, [lists:sublist(L, Start, Q)]++Acc, R-1)
+		   end.
 
 
 split(L, N) ->
-    Len = length(L) div N,
-    dela(L, Len, []).
+    Len = length(L),
+    Q   = Len div N,
+    R   = Len rem N,
+    if R =:= 0 ->
+	    dela(L, Q, Len - Q+1, [], R);
+       true -> dela(L, Q+1, Len - Q, [], R) end.
 
-
-%% @doc converts an integer to a list with the numbers in that base
-%% example: listigt(1234, 10, []) = [1,2,3,4].
-listigt(0, _, List) ->
-List;
-listigt(N, Bas, List) ->
-listigt((N div Bas),Bas, [(N rem Bas)] ++ List).
-
-%% @doc adds zeros to list A and B so they are both the same length
-%% and their length is evenly dividable with N
-nolligt(A,B,N) ->
-if
-((length(A)) =:= length(B)) ->
-{add_zero(A,N),add_zero(B,N)};
-((length(A)) < (length(B))) ->
-B2 = add_zero(B,N),
-A2 = add_even(A,B2),
-{A2,B2};
-true ->
-A2 = add_zero(A,N),
-B2 = add_even(B,A2),
-{A2,B2}
-end.
-
-
-%% @doc Adds zeros to the beginning of X until X:s length is 
-%% evenly divisible by N
-add_zero(X,N)->
-if((length(X) rem N) =:= 0) ->
-X;
-true ->
-add_zero(([0]++X), N)
-end.
-
-%% @doc Adds zeros to the beginning of A until A has the same 
-%% length as B.
-add_even(A,B)->
-if
-((length(A)) =:= (length(B)))->
-A;
-true ->
-add_even(([0] ++ A),B)
-
-end.
-
-
-%%DAVIDS
-%%adder(A,B,CarryIn, Base) ->
-
-  %%  (AI = list_to_integer(A,Base)),
-    %%(BI = list_to_integer(B,Base)),
-    %%if
-%%	(AI + BI + CarryIn) >= 10->
-%%	    {1,(AI + BI + CarryIn) rem 10};
-%%	true ->
-%%	    {0,AI + BI + CarryIn}
-  %%  end.
-
-
-
-%% adder(A,B, CarryIn, Base) -> {carryOut, result}
-adder(A,B,CarryIn, Base) ->
-    if
-	(A + B + CarryIn) >= Base->
-	    {1,(A + B + CarryIn) rem Base};
-	true ->
-	    {0,A + B + CarryIn}
-    end.
-
-%% listAdderHelp
-listAdderHelp([],[],_, Result) ->
-    Result;
-listAdderHelp([A | Atl],[B | Btl],Base,{CarryIn,Result}) ->
-    {CarryOut, Sum} = adder(A,B,CarryIn,Base),
-   listAdderHelp(Atl, Btl, Base, {CarryOut,[Sum] ++ Result}).
-    
-
-%% listAdder
-listAdder(A,B,Base) ->
-    listAdderHelp(lists:reverse(A), lists:reverse(B), Base, {0, []}).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -224,70 +199,6 @@ listAdder(A,B,Base) ->
 %%			   EUnit Test Cases                                 %%
 %%                                                                          %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%ATT TESTA: listigt, Nolligt, split, adder
-
-%%enkelt test listigt
-listigt_test() ->
-    ?_assertEqual(listigt(1234, 10, []), [1,2,3,4]).
-
-
-%%enkelt test för listAdder
-listAdder_test() ->
-    ?_assertEqual(listAdder([1,2],[3,4], 10), {0, [4,6]}).
-%%enkelt test för listAdder
-listAdder2_test() ->
-    ?_assertEqual(listAdder([1,2],[1,1], 3), {0, [1,0,0]}).
-%%enkelt test för listAdder
-listAdder3_test() ->
-    ?_assertEqual(listAdder([5,2],[5,9], 11), {1, [0,0]}).
-listAdder4_test() ->
-    ?_assertEqual(listAdder([1,10,8,13],[14,6,0,3],16), {1, [0,0,9,0]}).
-listAdder5_test() ->
-    ?_assertEqual(listAdder([0,1,2,3,4,5],[6,7,8,9,0,1],10), {0, [6,9,1,2,4,6]}).
-
-
-%%creates a list, of random integer elements, of length N
-random_list(N) ->
-    [random:uniform() || _ <- lists:seq(1, N)].
-
-%%returns true if A and B have the same length, false otherwise
-compareLength({A,B}) -> if ((length(A)) =:= length(B)) ->
-				    true;
-			   true -> false end.
-
-%%returns a list of zeros with length N ^ L
-nollListaHelp(0,L) ->
-    L;
-nollListaHelp(N,L) ->
-    nollListaHelp(N-1, [0] ++ L).
-
-%%returns a list of zeros with length N
-nollLista(N) ->
-    nollListaHelp(N,[]).
-    
-
-%%checks that both lists are the same length
-nolligt_length_test_() -> 
-    TupleList = [{N1,N2,L} || N1 <- lists:seq(1,20), N2 <- lists:seq(1,20), L <- lists:seq(1,4)],
-    [?_assertEqual(compareLength(nolligt(random_list(N1), random_list(N2), L)), true)  || {N1,N2,L} <- TupleList].
-
-
-%%checks that zeros are concatinated correctly
-%%when list A is shorter than list B
-nolligt_zero_test() ->
-    ListA = [1,2,3],
-    ListB = [1,2,3,4,5,6],
-    ?_assertEqual(nolligt(ListA, ListB, 4), {[0,0,0,0,0,0,1,2,3], [0,0,1,2,3,4,5,6]}).
-nolligt_zero2_test() ->
-    ListA = [1,2,3],
-    ListB = [1,2,3,4,5,6],
-    ?_assertEqual(nolligt(ListA, ListB, 2), {[0,1,2,3], [1,2,3,4,5,6]}).
-nolligt_zero3_test() ->
-    ListA = [1,2],
-    ListB = [1,2,3,4,5,6],
-    ?_assertEqual(nolligt(ListA, ListB, 3), {[0,0,0,1,2,3], [1,2,3,4,5,6]}).
-  
 
 seqs_length_test_() ->
     %% The list [[], [1], [1,2], ..., [1,2, ..., N]] will allways have
@@ -335,24 +246,24 @@ filter_test() ->
     
     ?assertEqual(E, filter([P1,P2,P3], L)).
     
-%split_concat_test_() ->
+split_concat_test_() ->
     %% Make sure the result of concatenating the sublists equals the
     %% original list.
     
-%    L = lists:seq(1,99),
-%   [?_assertEqual(L, lists:concat(split(L,N))) || N <- lists:seq(1,133)].
+    L = lists:seq(1,99),
+    [?_assertEqual(L, lists:concat(split(L,N))) || N <- lists:seq(1,133)].
 
-%split_n_test_() ->
+split_n_test_() ->
     %% Make sure the correct number of sublists are generated. 
     
- %   M = 99,
- %   L = lists:seq(1,M),
- %   Num_of_lists = fun(List, N) when N =< length(List) ->
-%			   N;
-%		      (List, _) ->
-%			   length(List)
-%		   end,
- %   [?_assertEqual(Num_of_lists(L,N), length(split(L,N))) || N <- L].    
+    M = 99,
+    L = lists:seq(1,M),
+    Num_of_lists = fun(List, N) when N =< length(List) ->
+			   N;
+		      (List, _) ->
+			   length(List)
+		   end,
+    [?_assertEqual(Num_of_lists(L,N), length(split(L,N))) || N <- L].    
 
 
 expected_stat(L, N) when N =< length(L) ->
@@ -385,17 +296,17 @@ stat(N, M, LL) ->
     
     {{Num_N, N}, {Num_M, M}}.
 
-%split_stat_test_() ->
+split_stat_test_() ->
     %% Assure the list of sublists contains the correct number of
     %% lists of the two expected lengths.
 	
-%    Assert = fun(L,N) ->
-%		     {_, Q, _} = lqr(L,N), 
-%		     ?_assertEqual(expected_stat(L,N), stat(Q+1, Q, split(L,N))) 
-%	     end,
+    Assert = fun(L,N) ->
+		     {_, Q, _} = lqr(L,N), 
+		     ?_assertEqual(expected_stat(L,N), stat(Q+1, Q, split(L,N))) 
+	     end,
 	
     %% Generators can depend on other generator expressions, here N
     %% depends on the length of L.
     
-%    [Assert(L,N) ||  L <- seqs(33), N <- lists:seq(1,length(L)+5)].
+    [Assert(L,N) ||  L <- seqs(33), N <- lists:seq(1,length(L)+5)].
     
