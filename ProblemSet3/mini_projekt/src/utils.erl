@@ -138,12 +138,14 @@ split(L, N) ->
     dela(L, Len, []).
 
 
-%% @doc converts an integer to a list with the numbers in that base
+%% @doc converts an integer N to a list with the numbers 
+%% in the base Bas concatinated with List
 %% example: listigt(1234, 10, []) = [1,2,3,4].
+%% example: listigt(1234, 8, []) = [2,3,2,2]).
 listigt(0, _, List) ->
-List;
+    List;
 listigt(N, Bas, List) ->
-listigt((N div Bas),Bas, [(N rem Bas)] ++ List).
+    listigt((N div Bas),Bas, [(N rem Bas)] ++ List).
 
 %% @doc adds zeros to list A and B so they are both the same length
 %% and their length is evenly dividable with N
