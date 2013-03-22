@@ -301,6 +301,71 @@ nto10(I,Base) ->
 %%                                                                          %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%ATT TESTA: listigt, Nolligt, split, adder
+
+%%enkelt test listigt
+listigt_test() ->
+    ?_assertEqual(listigt(1234, 10, []), [1,2,3,4]).
+
+
+%%enkelt test för listAdder
+listAdder_test() ->
+    ?_assertEqual(listAdder([1,2],[3,4], 10), {0, [4,6]}).
+%%enkelt test för listAdder
+listAdder2_test() ->
+    ?_assertEqual(listAdder([1,2],[1,1], 3), {0, [1,0,0]}).
+%%enkelt test för listAdder
+listAdder3_test() ->
+    ?_assertEqual(listAdder([5,2],[5,9], 11), {1, [0,0]}).
+listAdder4_test() ->
+    ?_assertEqual(listAdder([1,10,8,13],[14,6,0,3],16), {1, [0,0,9,0]}).
+listAdder5_test() ->
+    ?_assertEqual(listAdder([0,1,2,3,4,5],[6,7,8,9,0,1],10), {0, [6,9,1,2,4,6]}).
+
+
+%%creates a list, of random integer elements, of length N
+random_list(N) ->
+    [random:uniform() || _ <- lists:seq(1, N)].
+
+%%returns true if A and B have the same length, false otherwise
+compareLength({A,B}) -> if ((length(A)) =:= length(B)) ->
+				    true;
+			   true -> false end.
+
+%%returns a list of zeros with length N ^ L
+nollListaHelp(0,L) ->
+    L;
+nollListaHelp(N,L) ->
+    nollListaHelp(N-1, [0] ++ L).
+
+%%returns a list of zeros with length N
+nollLista(N) ->
+    nollListaHelp(N,[]).
+    
+
+%%checks that both lists are the same length
+nolligt_length_test_() -> 
+    TupleList = [{N1,N2,L} || N1 <- lists:seq(1,20), N2 <- lists:seq(1,20), L <- lists:seq(1,4)],
+    [?_assertEqual(compareLength(nolligt(random_list(N1), random_list(N2), L)), true)  || {N1,N2,L} <- TupleList].
+
+
+%%checks that zeros are concatinated correctly
+%%when list A is shorter than list B
+nolligt_zero_test() ->
+    ListA = [1,2,3],
+    ListB = [1,2,3,4,5,6],
+    ?_assertEqual(nolligt(ListA, ListB, 4), {[0,0,0,0,0,0,1,2,3], [0,0,1,2,3,4,5,6]}).
+nolligt_zero2_test() ->
+    ListA = [1,2,3],
+    ListB = [1,2,3,4,5,6],
+    ?_assertEqual(nolligt(ListA, ListB, 2), {[0,1,2,3], [1,2,3,4,5,6]}).
+nolligt_zero3_test() ->
+    ListA = [1,2],
+    ListB = [1,2,3,4,5,6],
+    ?_assertEqual(nolligt(ListA, ListB, 3), {[0,0,0,1,2,3], [1,2,3,4,5,6]}).
+  
+
+
 seqs_length_test_() ->
     %% The list [[], [1], [1,2], ..., [1,2, ..., N]] will allways have
     %% length N+1.
