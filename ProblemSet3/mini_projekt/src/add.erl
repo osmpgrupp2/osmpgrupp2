@@ -2,6 +2,8 @@
 -module(add).
 -export([start/3, start/4]).
 
+-compile(export_all).
+
 %% @doc TODO: add documentation
 -spec start(A,B,Base) -> ok when 
       A::integer(),
@@ -14,18 +16,18 @@ start(A,B, Base) ->
     {AN,BN} = utils:nolligt(AL,BL,3),
     AS = utils:split(AN,3),
     BS = utils:split(BN,3),
-    io:format("~p ~p ~n",[AS,BS]),
 
-    ChildArray = array:new(length(AS)),
-    io:format("hejhej2 ~n"),
-    ChildArray = mainSpawner(AS,BS,ChildArray,Base),
-    io:format("hejhej3 ~n"),
+    ChildArray = array:new([{size, length(AS)},{fixed,true}] ),
+    ChildArray2 = mainSpawner(AS,BS,ChildArray,Base),
+    FirstChild = array:get(length(AS) -1, ChildArray2),
+    FirstChild ! {carryIn, 0},
     ResultArray = array:new(length(AS)), 
-    io:format("hejhej4 ~n"),
-    ResultArray = mainRecieverLoopiloop(ChildArray, ResultArray, length(AS)), 
-    
-io:format("Print ~p ~n", [ResultArray]).
-%%printa ut saker
+    ResultArray2 = mainRecieverLoopiloop(ChildArray2, ResultArray, length(AS)), 
+
+    ResultList2 = array:to_list(ResultArray2),
+    {CarryList, ResultList} = lists:unzip(ResultList2),
+    TheResultList = lists:append(ResultList),
+    utils:print(AL, BL, TheResultList, CarryList). 
 
 %% @doc TODO: add documentation
 -spec start(A,B,Base, Options) -> ok when 
@@ -54,6 +56,8 @@ mainRecieverLoopiloop(_ChildArray, ResultArray, 0) ->
     ResultArray;
 mainRecieverLoopiloop(ChildArray, ResultArray, Counter) ->
     receive
+	{carryIn, Result} ->
+	    mainRecieverLoopiloop(ChildArray, ResultArray, Counter);
 	{ChildPID, Result} ->
 	    exit(ChildPID, kill),
 	    mainRecieverLoopiloop(ChildArray, array:set(findArrayIndex(ChildPID, ChildArray,0), Result, ResultArray), Counter - 1)
@@ -89,20 +93,16 @@ findArrayIndex(Item, Array, Index) ->
       Index::integer(), 
       ChildArray::array(), 
       Base::integer(), 
-      ParentPID::integer(),
-      ChildArray2::array.
+      ParentPID::pid(),
+      ChildArray2::array().
 
-mainSpawnerHelp([], _,_ , ChildArray, _, _) ->
+mainSpawnerHelp([], _,_ , ChildArray, _, _) -> 
     ChildArray;
 mainSpawnerHelp([A | Atl],[B | Btl], 0, ChildArray, Base, ParentPID) ->
-    io:format("MainSpawnerHelp/2 ~n"),
-    mainSpawnerHelp(Atl, Btl, 1, array:set(0, spawn_link(add, spawnChild, [A,B, ParentPID, ParentPID,Base]), ChildArray), Base, ParentPID);
+    mainSpawnerHelp(Atl, Btl, 1, array:set(0, spawn(add, spawnChild, [A, B, ParentPID, ParentPID, Base]), ChildArray), Base, ParentPID);
 mainSpawnerHelp([A | Atl],[B | Btl],Index, ChildArray, Base, ParentPID) ->
-    io:format("MainSpawnerHelp/3 ~n"),
-    mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn_link(add, spawnChild, [A,B, ParentPID, array:get(Index - 1, ChildArray),Base ]), ChildArray), Base,ParentPID).
-
-
-
+    mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn(add, spawnChild, [A,B, ParentPID, (array:get((Index - 1), ChildArray)),Base])
+						  , ChildArray), Base, ParentPID).
 
 
 
@@ -127,14 +127,14 @@ mainSpawner(A,B,ChildArray,Base) ->
 -spec spawnChild(A,B,ParentPID, NextPID, Base) -> none() when
       A::[integer()],
       B::[integer()],
-      ParentPID::integer(),
-      NextPID::integer(),
+      ParentPID::pid(),
+      NextPID::pid(),
       Base::integer().
-      
+
 spawnChild(A,B, ParentPID, NextPID, Base) ->
-    io:format("spawnChild ~n"),
-    spawn_link(add, spawnBaby, [A, B, 0, Base, self()]),
-    spawn_link(add, spawnBaby, [A, B, 1, Base, self()]),
+    ChildPID = self(),
+    spawn_link(add, spawnBaby, [A, B, 0, Base, ChildPID]),
+    spawn_link(add, spawnBaby, [A, B, 1, Base, ChildPID]),
     ResultArray = array:new(2),
     spawnChildReceiveLoop(ResultArray, ParentPID, NextPID).
 
@@ -145,32 +145,36 @@ spawnChild(A,B, ParentPID, NextPID, Base) ->
 %% when carryIn from prev. process is recieved
 -spec spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) -> none() when
       ResultArray::array(),
-      ParentPID::integer(),
-      NextPID::integer().
-spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
+      ParentPID::pid(),
+      NextPID::pid().
+spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) -> 
+receive
+	{carryIn, 0} -> %%om vi får veta att carryIn är 0
+	    Result = spawnChildReceiveResultZero(),
+	    NextPID ! {carryIn, element(1, Result)},
+	    ParentPID ! {self(), Result};
+
+	{carryIn, 1} -> %%om vi får veta att carry in är 1
+	    Result = spawnChildReceiveResultOne(),
+	    NextPID ! {carryIn, element(2, Result)},
+	    ParentPID ! {self(), Result}
+    end.
+
+spawnChildReceiveResultZero() ->
     receive
 	{0, Baby, Result} ->
-	    ResultArray = array:set(0, Result, ResultArray),
-	    exit(Baby, kill);
-	{1, Baby, Result} ->
-	    ResultArray = array:set(1, Result, ResultArray),
-	    exit(Baby, kill);
-	{carryIn, 0} -> %%omm vi får veta att carryIn är 0
-	    case ((array:get(0, ResultArray)) =/= undefined) of
-		true -> 
-		    NextPID ! {carryIn, element(0, array:get(0, ResultArray))},
-		    ParentPID ! {self(), array:get(0, ResultArray)};
-		false -> 
-		    spawnChildReceiveLoop(ResultArray, ParentPID, NextPID)
-	    end;
-	{carryIn, 1} -> %% o vi får veta att carry in är 1
-	    case ((array:get(1, ResultArray)) =/= undefined) of
-		true ->
-		    NextPID ! {carryIn, element(1, array:get(1, ResultArray))},
-		    ParentPID ! {self(), array:get(1, ResultArray)};
-		false -> spawnChildReceiveLoop(ResultArray, ParentPID, NextPID)
-	    end
+	    exit(Baby, kill),
+	    Result
     end.
+
+
+spawnChildReceiveResultOne() ->
+    receive
+	{1, Baby, Result} ->
+	    exit(Baby, kill),
+	    Result
+    end.
+
 
 
 
@@ -180,10 +184,9 @@ spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
       B::[integer()],
       CarryIn::integer(),
       Base::integer(),
-      ParentPID::integer().
+      ParentPID::pid().
 	      
 spawnBaby(A,B,CarryIn, Base, ParentPID) ->
-    io:format("spawnBaby ~n"),
     ParentPID ! {CarryIn, self(), utils:listAdder(A,B,Base,{CarryIn,[]})}.
 
 
