@@ -101,15 +101,24 @@ repeat(Char, N) ->
 line(C, N) ->
     repeat(C, N).
 
+filter(Char) ->
+    if Char > 47 ->
+	    Char - 48;
+       true -> Char 
+    end.
+
+
+
 print_list([]) ->
     io:fwrite("~n");
 print_list([A|As]) ->
-    io:format("~p", [A]),
+    io:format("~p", [filter(A)]),
     print_list(As).
 
 fix_len(List, N) ->
     L = length(List),
     N - L.
+
 print_list_minus_nollor([]) ->
     io:fwrite("~n");
 print_list_minus_nollor([A|AS]) ->
@@ -136,7 +145,16 @@ master(Array, Length, Pos, Acc) ->
     Temp = [Digit]++fjant(Length-1, []),
     master(Array, Length, Pos-1, Temp++Acc).
 
-print(A, B, Res, C) ->
+konk([], Acc) ->
+    Acc;
+konk([X|Xs], Acc) ->
+    konk(Xs, string:concat(X, Acc)).
+
+    
+
+print(As, Bs, Res, C) ->
+    A   = konk(lists:reverse(As), ""),
+    B   = konk(lists:reverse(Bs), ""),
     Lin = line($-, len(A,B)+1),
     Max = length(Lin),
     Alen = fix_len(A, Max),
@@ -166,12 +184,12 @@ convert_to_ten(Int, Bas) ->
     List = listigt(Int, []),
     conv(List, Bas, length(List)-1, 0).
 
-%% konverterar talet Int som är representerat i bas 10 till bas N.
-convert_to_N(Int, Bas) ->
-    S = integer_to_list(Int, Bas),
-    {Z, _} = string:to_integer(S),
-    Z.
 
+%% konverterar talet Int som är representerat i bas 10 till bas N.
+convert_to_N(List, Bas) ->
+    {Int, _} = string:to_integer(lists:concat(List)),
+    S = integer_to_list(Int, Bas),
+    S.
 convertBase(Str, Bas) ->
     S = lists:reverse(Str),
     S2 = lists:map(fun(X) ->
