@@ -11,23 +11,26 @@
       Base::integer().
 
 start(A,B, Base) ->
+   % AL = utils:listigt(utils:convertBase(A),Base,[]),
+   % BL = utils:listigt(utils:convertBase(B),Base,[]),
+
     AL = utils:listigt(A,Base,[]),
     BL = utils:listigt(B,Base,[]),
-    {AN,BN} = utils:nolligt(AL,BL,3),
-    AS = utils:split(AN,3),
-    BS = utils:split(BN,3),
 
-    ChildArray = array:new([{size, length(AS)},{fixed,true}] ),
+    {AN,BN} = utils:nolligt(AL,BL,3),
+    AS = utils:split(AN,length(AN)),%%istället för 3
+    BS = utils:split(BN,length(AN)),%%istället för 3
+
+    ChildArray = array:new(length(AS)),
     ChildArray2 = mainSpawner(AS,BS,ChildArray,Base),
     FirstChild = array:get(length(AS) -1, ChildArray2),
     FirstChild ! {carryIn, 0},
     ResultArray = array:new(length(AS)), 
     ResultArray2 = mainRecieverLoopiloop(ChildArray2, ResultArray, length(AS)), 
 
-    ResultList2 = array:to_list(ResultArray2),
-    {CarryList, ResultList} = lists:unzip(ResultList2),
+    {CarryList, ResultList} = lists:unzip(array:to_list(ResultArray2)),
     TheResultList = lists:append(ResultList),
-    utils:print(AL, BL, TheResultList, CarryList). 
+    utils:print(AL, BL, lists:sublist(CarryList,1) ++ TheResultList, CarryList ++ [0]). 
 
 %% @doc TODO: add documentation
 -spec start(A,B,Base, Options) -> ok when 
@@ -56,7 +59,7 @@ mainRecieverLoopiloop(_ChildArray, ResultArray, 0) ->
     ResultArray;
 mainRecieverLoopiloop(ChildArray, ResultArray, Counter) ->
     receive
-	{carryIn, Result} ->
+	{carryIn, _Result} ->
 	    mainRecieverLoopiloop(ChildArray, ResultArray, Counter);
 	{ChildPID, Result} ->
 	    exit(ChildPID, kill),
@@ -135,19 +138,17 @@ spawnChild(A,B, ParentPID, NextPID, Base) ->
     ChildPID = self(),
     spawn_link(add, spawnBaby, [A, B, 0, Base, ChildPID]),
     spawn_link(add, spawnBaby, [A, B, 1, Base, ChildPID]),
-    ResultArray = array:new(2),
-    spawnChildReceiveLoop(ResultArray, ParentPID, NextPID).
+    spawnChildReceiveLoop(ParentPID, NextPID).
 
 
 %% @doc receives messages from baby processes and prev. process
 %% saves results from children
 %% send result to parent and carryOut to next process
 %% when carryIn from prev. process is recieved
--spec spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) -> none() when
-      ResultArray::array(),
+-spec spawnChildReceiveLoop(ParentPID, NextPID) -> none() when
       ParentPID::pid(),
       NextPID::pid().
-spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) -> 
+spawnChildReceiveLoop(ParentPID, NextPID) -> 
 receive
 	{carryIn, 0} -> %%om vi får veta att carryIn är 0
 	    Result = spawnChildReceiveResultZero(),
