@@ -55,9 +55,9 @@ findArrayIndex(Item, Array, Index) ->
 mainSpawnerHelp([], _,_ , ChildArray, _, _) ->
     ChildArray;
 mainSpawnerHelp([A | Atl],[B | Btl], 0, ChildArray, Base, ParentPID) ->
-    mainSpawnerHelp(Atl, Btl, 1, array:set(0, spawn(add, spawnChild, [A,B, ParentPID, ParentPID]), ChildArray), Base, ParentPID);
+    mainSpawnerHelp(Atl, Btl, 1, array:set(0, spawn(add, spawnChild, [A,B, ParentPID, ParentPID, Base]), ChildArray), Base, ParentPID);
 mainSpawnerHelp([A | Atl],[B | Btl],Index, ChildArray, Base, ParentPID) ->
-    mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn(add, spawnChild, [A,B, ParentPID, array:get(Index - 1, ChildArray) ]), ChildArray), Base,ParentPID).
+    mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn(add, spawnChild, [A,B, ParentPID, array:get(Index - 1, ChildArray), Base]), ChildArray), Base,ParentPID).
 
 %% @doc returnerar en array med piden till de spawnade barnen i rätt ordning
 mainSpawner(A,B,ChildArray,Base) ->
@@ -81,7 +81,7 @@ spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
 	{1, Baby, Result} ->
 	    ResultArray = array:set(1, Result, ResultArray),
 	    exit(Baby, kill);
-	{carryIn, 0} -> %%omm vi får veta att carryIn är 0
+	{carryIn, 0} -> %%om vi får veta att carryIn är 0
 	    case ((array:get(0, ResultArray)) =/= undefined) of
 		true -> %% this line no works....
 		    NextPID ! {carryIn, element(0, array:get(0, ResultArray))},
@@ -89,7 +89,7 @@ spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
 		false -> 
 		    spawnChildReceiveLoop(ResultArray, ParentPID, NextPID)
 	    end;
-	{carryIn, 1} -> %% o vi får veta att carry in är 1
+	{carryIn, 1} -> %%om vi får veta att carry in är 1
 	    case ((array:get(1, ResultArray)) =/= undefined) of
 		true ->
 		    NextPID ! {carryIn, element(1, array:get(1, ResultArray))},
@@ -102,4 +102,4 @@ spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
 %% Baby process
 spawnBaby(A,B,CarryIn, Base) ->
     %%do some magic
-    {CarryIn, self(), result}.%someAdder(A,B, CarryIn, Base)}.
+    {CarryIn, self(), utils:listAdder(A,B,Base,{CarryIn}.%someAdder(A,B, CarryIn, Base)}.
