@@ -39,7 +39,25 @@ start(A,B, Base) ->
       Options::[Option].
 
 start(A,B,Base, Options) ->
-    tbi.
+    T = 1,
+    AL = utils:convertBase(A,Base),
+    BL = utils:convertBase(B,Base),
+    {A_noll,B_noll} = utils:nolligt(utils:listigt(AL, []),utils:listigt(BL,[]), T),
+    AN = utils:split(A_noll, T),
+    BN = utils:split(B_noll, T),
+
+    ChildArray = array:new(length(AN)),
+    ChildArray2 = mainSpawner(AN,BN,ChildArray,Base,Options),
+    FirstChild = array:get(length(AN) -1, ChildArray2),
+    FirstChild ! {carryIn, 0},
+    ResultArray = array:new(length(AN)), 
+    ResultArray2 = mainRecieverLoopiloop(ChildArray2, ResultArray, length(AN)), 
+
+    {CarryList, ResultList} = lists:unzip(array:to_list(ResultArray2)),
+    TheResultList = lists:append(ResultList),
+
+    utils:print(utils:listIt(A,length(A),[]), utils:listIt(B,length(B),[]), utils:convert_to_N(lists:sublist(CarryList,1) ++ TheResultList, Base), CarryList ++ [0]). 
+
 
 
 %% @doc Loop to receive results from all children and then kill them
@@ -102,8 +120,17 @@ mainSpawnerHelp([], _,_ , ChildArray, _, _) ->
 mainSpawnerHelp([A | Atl],[B | Btl], 0, ChildArray, Base, ParentPID) ->
     mainSpawnerHelp(Atl, Btl, 1, array:set(0, spawn(add, spawnChild, [A, B, ParentPID, ParentPID, Base]), ChildArray), Base, ParentPID);
 mainSpawnerHelp([A | Atl],[B | Btl],Index, ChildArray, Base, ParentPID) ->
-    mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn(add, spawnChild, [A,B, ParentPID, (array:get((Index - 1), ChildArray)),Base])
-						  , ChildArray), Base, ParentPID).
+    mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn(add, spawnChild, [A,B, ParentPID, (array:get((Index - 1), ChildArray)),Base]), ChildArray), Base, ParentPID).
+
+%%OPTIONS!
+
+
+mainSpawnerHelpOptions([], _,_ , ChildArray, _, _,_) -> 
+    ChildArray;
+mainSpawnerHelpOptions([A | Atl],[B | Btl], 0, ChildArray, Base, ParentPID,Options) ->
+    mainSpawnerHelpOptions(Atl, Btl, 1, array:set(0, spawn(add, spawnChild, [A, B, ParentPID, ParentPID, Base,Options]), ChildArray), Base, ParentPID,Options);
+mainSpawnerHelpOptions([A | Atl],[B | Btl],Index, ChildArray, Base, ParentPID,Options) ->
+    mainSpawnerHelpOptions(Atl, Btl,Index + 1, array:set(Index, spawn(add, spawnChild, [A,B, ParentPID, (array:get((Index - 1), ChildArray)),Base,Options]), ChildArray), Base, ParentPID,Options).
 
 
 
@@ -119,6 +146,8 @@ mainSpawnerHelp([A | Atl],[B | Btl],Index, ChildArray, Base, ParentPID) ->
 
 mainSpawner(A,B,ChildArray,Base) ->
     mainSpawnerHelp(A,B,0,ChildArray, Base, self()).
+mainSpawner(A,B,ChildArray,Base,Options) ->
+    mainSpawnerHelpOptions(A,B,0,ChildArray, Base, self(),Options).
 
 
 %% @doc spaws two babys that returns result
@@ -136,6 +165,11 @@ spawnChild(A,B, ParentPID, NextPID, Base) ->
     ChildPID = self(),
     spawn_link(add, spawnBaby, [A, B, 0, Base, ChildPID]),
     spawn_link(add, spawnBaby, [A, B, 1, Base, ChildPID]),
+    spawnChildReceiveLoop(ParentPID, NextPID).
+spawnChild(A,B, ParentPID, NextPID, Base,Options) ->
+    ChildPID = self(),
+    spawn_link(add, spawnBaby, [A, B, 0, Base, ChildPID,Options]),
+    spawn_link(add, spawnBaby, [A, B, 1, Base, ChildPID,Options]),
     spawnChildReceiveLoop(ParentPID, NextPID).
 
 
@@ -186,6 +220,9 @@ spawnChildReceiveResultOne() ->
       ParentPID::pid().
 	      
 spawnBaby(A,B,CarryIn, Base, ParentPID) ->
+    ParentPID ! {CarryIn, self(), utils:listAdder(A,B,Base,{CarryIn,[]})}.
+spawnBaby(A,B,CarryIn, Base, ParentPID,Options) ->
+    timer:sleep(utils:randomInt(Options)),
     ParentPID ! {CarryIn, self(), utils:listAdder(A,B,Base,{CarryIn,[]})}.
 
 
