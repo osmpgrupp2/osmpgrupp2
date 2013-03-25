@@ -367,7 +367,7 @@ nto10(I,Base) ->
     integer_to_list(I,Base).
 
 
-randomInt(Min,Max) -> 
+randomInt([Min,Max]) -> 
 Mult = (random:uniform())+1,
 Max_1 = Mult * Max,
 Min_1 = Mult * Min,
