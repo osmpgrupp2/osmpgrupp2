@@ -60,7 +60,11 @@ empty(Fifo) ->
 -spec pop(Fifo) -> term() when Fifo::pfifo().
 
 pop(Fifo) ->
-    tbi.
+    Fifo ! {pop, self()},
+    receive
+	{pop, Item} ->
+	    Item
+    end.
 
 
 %% @doc Push a new value to Fifo. 
@@ -68,8 +72,13 @@ pop(Fifo) ->
       Fifo::pfifo(),
       Value::term().
 push(Fifo, Value) ->
-    ok.
-    
+    Fifo ! {push, self(), Value},
+    receive
+	{push, None} ->
+	    ok
+    end.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%                         EUnit Test Cases                                  %%

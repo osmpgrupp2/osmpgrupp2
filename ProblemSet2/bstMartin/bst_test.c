@@ -178,7 +178,7 @@ profile_mutli_threaded(struct bst_node **root, int *data,
 }
 
 int main()
-{
+{/*
     int *data;
     struct bst_node** root = NULL;
     const int nthreads = 4;
@@ -213,7 +213,8 @@ int main()
     bst_tree_fini(root);
 
     free(data);
-
+ */
+    printf("fluffy!");
     return 0;
 }
 
