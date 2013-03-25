@@ -6,31 +6,29 @@
 
 %% @doc TODO: add documentation
 -spec start(A,B,Base) -> ok when 
-      A::integer(),
-      B::integer(), 
+      A::string(),
+      B::string(), 
       Base::integer().
 
 start(A,B, Base) ->
-   % AL = utils:listigt(utils:convertBase(A),Base,[]),
-   % BL = utils:listigt(utils:convertBase(B),Base,[]),
+    AL = utils:convertBase(A,Base),
+    BL = utils:convertBase(B,Base),
 
-    AL = utils:listigt(A,Base,[]),
-    BL = utils:listigt(B,Base,[]),
+    A_split = utils:split(AL, 3),
+    B_split = utils:split(BL, 3),
 
-    {AN,BN} = utils:nolligt(AL,BL,3),
-    AS = utils:split(AN,length(AN)),%%istället för 3
-    BS = utils:split(BN,length(AN)),%%istället för 3
+    {AN,BN} = utils:nolligt(A_split,B_split,3),
 
-    ChildArray = array:new(length(AS)),
-    ChildArray2 = mainSpawner(AS,BS,ChildArray,Base),
-    FirstChild = array:get(length(AS) -1, ChildArray2),
+    ChildArray = array:new(length(AN)),
+    ChildArray2 = mainSpawner(AN,BN,ChildArray,Base),
+    FirstChild = array:get(length(AN) -1, ChildArray2),
     FirstChild ! {carryIn, 0},
-    ResultArray = array:new(length(AS)), 
-    ResultArray2 = mainRecieverLoopiloop(ChildArray2, ResultArray, length(AS)), 
+    ResultArray = array:new(length(AN)), 
+    ResultArray2 = mainRecieverLoopiloop(ChildArray2, ResultArray, length(AN)), 
 
     {CarryList, ResultList} = lists:unzip(array:to_list(ResultArray2)),
     TheResultList = lists:append(ResultList),
-    utils:print(AL, BL, lists:sublist(CarryList,1) ++ TheResultList, CarryList ++ [0]). 
+    utils:print(AN, BN, lists:sublist(CarryList,1) ++ TheResultList, CarryList ++ [0]). 
 
 %% @doc TODO: add documentation
 -spec start(A,B,Base, Options) -> ok when 

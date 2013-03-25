@@ -87,6 +87,113 @@ lqr(L, N) ->
     
     {Len, Q, R}. 
 
+
+len(A, B) ->
+Alen = length(A),
+Blen = length(B),
+if Alen > Blen ->
+Alen+1;
+true -> Blen+1 end.
+
+repeat(Char, N) ->
+[Char || _ <- lists:seq(1,N)].
+
+line(C, N) ->
+repeat(C, N).
+
+print_list([]) ->
+io:fwrite("~n");
+print_list([A|As]) ->
+io:format("~p", [A]),
+print_list(As).
+
+fix_len(List, N) ->
+L = length(List),
+N - L.
+print_list_minus_nollor([]) ->
+io:fwrite("~n");
+print_list_minus_nollor([A|AS]) ->
+if A =:= 0 ->
+io:format(" ");
+true -> io:format("~p", [A])
+end,
+print_list_minus_nollor(AS).
+
+fjant(0, Acc) ->
+Acc;
+fjant(Int, Acc) ->
+fjant(Int-1, [0]++Acc).
+
+%% Pos ska vara index på SISTA biten i arrayen som innehåller något vettigt!!!!
+%% Acc = [0] vid anrop!!!!!
+%% Length = storlek på chunks!!!!!!!!!!!!!
+master(Array, Length, 0, Acc) ->
+{Digit, _} = array:get(0, Array),
+Temp = [Digit]++fjant(Length-1, []),
+Temp++Acc;
+master(Array, Length, Pos, Acc) ->
+{Digit, _} = array:get(Pos, Array),
+Temp = [Digit]++fjant(Length-1, []),
+master(Array, Length, Pos-1, Temp++Acc).
+
+print(A, B, Res, C) ->
+Lin = line($-, len(A,B)+1),
+Max = length(Lin),
+Alen = fix_len(A, Max),
+Blen = fix_len(B, Max-1),
+Rlen = fix_len(Res, Max),
+Clen = fix_len(C, Max),
+io:fwrite(line($ , Clen)),
+print_list_minus_nollor(C),
+io:fwrite(line($ , Alen)),
+print_list(A),
+io:fwrite("+"),
+io:fwrite(line($ , Blen)),
+print_list(B),
+io:fwrite(Lin),
+io:fwrite("~n"),
+io:fwrite(line($ , Rlen)),
+print_list(Res).
+
+listigt(0, List) ->
+List;
+listigt(N, List) ->
+listigt((N div 10), [(N rem 10)]++List).
+
+conv([], _, _, Acc) ->
+Acc;
+conv([H|T], Bas, Length, Acc) ->
+N = math:pow(Bas, Length),
+conv(T, Bas, Length-1, N*H+Acc).
+
+%% konverterar talet Int från bas N till bas 10.
+convert_to_ten(Int, Bas) ->
+List = listigt(Int, []),
+conv(List, Bas, length(List)-1, 0).
+
+%% konverterar talet Int som är representerat i bas 10 till bas N.
+convert_to_N(Int, Bas) ->
+S = integer_to_list(Int, Bas),
+{Z, _} = string:to_integer(S),
+Z.
+
+convertBase(Str, Bas) ->
+S = lists:reverse(Str),
+S2 = lists:map(fun(X) ->
+if X > 64 ->
+X - 55;
+true ->
+X - 48
+end
+end, S),
+convertBase_(S2, 1, Bas, 0).
+
+
+convertBase_([], _Base, _Orig, Acc) ->
+Acc;
+convertBase_([Head|Rest], Bas, OrigBas, Acc) ->
+convertBase_(Rest, Bas*OrigBas, OrigBas, Acc + Head*Bas).
+
 %% @doc Split List into N Lists such that all Lists have approximately the same number of elements. 
 %% 
 %% Let Len = length(List), Q = Len div N and R = Len rem N. 
@@ -310,17 +417,17 @@ listigt_test() ->
 
 %%enkelt test för listAdder
 listAdder_test() ->
-    ?_assertEqual(listAdder([1,2],[3,4], 10), {0, [4,6]}).
+    ?_assertEqual(listAdder([1,2],[3,4], 10, []), {0, [4,6]}).
 %%enkelt test för listAdder
 listAdder2_test() ->
-    ?_assertEqual(listAdder([1,2],[1,1], 3), {0, [1,0,0]}).
+    ?_assertEqual(listAdder([1,2],[1,1], 3, []), {0, [1,0,0]}).
 %%enkelt test för listAdder
 listAdder3_test() ->
-    ?_assertEqual(listAdder([5,2],[5,9], 11), {1, [0,0]}).
+    ?_assertEqual(listAdder([5,2],[5,9], 11, []), {1, [0,0]}).
 listAdder4_test() ->
-    ?_assertEqual(listAdder([1,10,8,13],[14,6,0,3],16), {1, [0,0,9,0]}).
+    ?_assertEqual(listAdder([1,10,8,13],[14,6,0,3],16, []), {1, [0,0,9,0]}).
 listAdder5_test() ->
-    ?_assertEqual(listAdder([0,1,2,3,4,5],[6,7,8,9,0,1],10), {0, [6,9,1,2,4,6]}).
+    ?_assertEqual(listAdder([0,1,2,3,4,5],[6,7,8,9,0,1],10, []), {0, [6,9,1,2,4,6]}).
 
 
 %%creates a list, of random integer elements, of length N
