@@ -11,13 +11,12 @@
       Base::integer().
 
 start(A,B, Base) ->
+    T = 1,
     AL = utils:convertBase(A,Base),
     BL = utils:convertBase(B,Base),
-
-    A_split = utils:split(AL, 3),
-    B_split = utils:split(BL, 3),
-
-    {AN,BN} = utils:nolligt(A_split,B_split,3),
+    {A_noll,B_noll} = utils:nolligt(utils:listigt(AL, []),utils:listigt(BL,[]), T),
+    AN = utils:split(A_noll, T),
+    BN = utils:split(B_noll, T),
 
     ChildArray = array:new(length(AN)),
     ChildArray2 = mainSpawner(AN,BN,ChildArray,Base),
@@ -28,7 +27,9 @@ start(A,B, Base) ->
 
     {CarryList, ResultList} = lists:unzip(array:to_list(ResultArray2)),
     TheResultList = lists:append(ResultList),
-    utils:print(AN, BN, lists:sublist(CarryList,1) ++ TheResultList, CarryList ++ [0]). 
+    {As, _} = string:to_integer(A),
+    {Bs, _} = string:to_integer(B),
+    utils:print(utils:listIt(A,length(B),[]), utils:listIt(B,length(B),[]), lists:sublist(CarryList,1) ++ TheResultList, CarryList ++ [0]). 
 
 %% @doc TODO: add documentation
 -spec start(A,B,Base, Options) -> ok when 

@@ -89,110 +89,105 @@ lqr(L, N) ->
 
 
 len(A, B) ->
-Alen = length(A),
-Blen = length(B),
-if Alen > Blen ->
-Alen+1;
-true -> Blen+1 end.
+    Alen = length(A),
+    Blen = length(B),
+    if Alen > Blen ->
+	    Alen+1;
+       true -> Blen+1 end.
 
 repeat(Char, N) ->
-[Char || _ <- lists:seq(1,N)].
+    [Char || _ <- lists:seq(1,N)].
 
 line(C, N) ->
-repeat(C, N).
+    repeat(C, N).
 
 print_list([]) ->
-io:fwrite("~n");
+    io:fwrite("~n");
 print_list([A|As]) ->
-io:format("~p", [A]),
-print_list(As).
+    io:format("~p", [A]),
+    print_list(As).
 
 fix_len(List, N) ->
-L = length(List),
-N - L.
+    L = length(List),
+    N - L.
 print_list_minus_nollor([]) ->
-io:fwrite("~n");
+    io:fwrite("~n");
 print_list_minus_nollor([A|AS]) ->
-if A =:= 0 ->
-io:format(" ");
-true -> io:format("~p", [A])
-end,
-print_list_minus_nollor(AS).
+    if A =:= 0 ->
+	    io:format(" ");
+       true -> io:format("~p", [A])
+    end,
+    print_list_minus_nollor(AS).
 
 fjant(0, Acc) ->
-Acc;
+    Acc;
 fjant(Int, Acc) ->
-fjant(Int-1, [0]++Acc).
+    fjant(Int-1, [0]++Acc).
 
 %% Pos ska vara index på SISTA biten i arrayen som innehåller något vettigt!!!!
 %% Acc = [0] vid anrop!!!!!
 %% Length = storlek på chunks!!!!!!!!!!!!!
 master(Array, Length, 0, Acc) ->
-{Digit, _} = array:get(0, Array),
-Temp = [Digit]++fjant(Length-1, []),
-Temp++Acc;
+    {Digit, _} = array:get(0, Array),
+    Temp = [Digit]++fjant(Length-1, []),
+    Temp++Acc;
 master(Array, Length, Pos, Acc) ->
-{Digit, _} = array:get(Pos, Array),
-Temp = [Digit]++fjant(Length-1, []),
-master(Array, Length, Pos-1, Temp++Acc).
+    {Digit, _} = array:get(Pos, Array),
+    Temp = [Digit]++fjant(Length-1, []),
+    master(Array, Length, Pos-1, Temp++Acc).
 
 print(A, B, Res, C) ->
-Lin = line($-, len(A,B)+1),
-Max = length(Lin),
-Alen = fix_len(A, Max),
-Blen = fix_len(B, Max-1),
-Rlen = fix_len(Res, Max),
-Clen = fix_len(C, Max),
-io:fwrite(line($ , Clen)),
-print_list_minus_nollor(C),
-io:fwrite(line($ , Alen)),
-print_list(A),
-io:fwrite("+"),
-io:fwrite(line($ , Blen)),
-print_list(B),
-io:fwrite(Lin),
-io:fwrite("~n"),
-io:fwrite(line($ , Rlen)),
-print_list(Res).
-
-listigt(0, List) ->
-List;
-listigt(N, List) ->
-listigt((N div 10), [(N rem 10)]++List).
+    Lin = line($-, len(A,B)+1),
+    Max = length(Lin),
+    Alen = fix_len(A, Max),
+    Blen = fix_len(B, Max-1),
+    Rlen = fix_len(Res, Max),
+    Clen = fix_len(C, Max),
+    io:fwrite(line($ , Clen)),
+    print_list_minus_nollor(C),
+    io:fwrite(line($ , Alen)),
+    print_list(A),
+    io:fwrite("+"),
+    io:fwrite(line($ , Blen)),
+    print_list(B),
+    io:fwrite(Lin),
+    io:fwrite("~n"),
+    io:fwrite(line($ , Rlen)),
+    print_list(Res).
 
 conv([], _, _, Acc) ->
-Acc;
+    Acc;
 conv([H|T], Bas, Length, Acc) ->
-N = math:pow(Bas, Length),
-conv(T, Bas, Length-1, N*H+Acc).
+    N = math:pow(Bas, Length),
+    conv(T, Bas, Length-1, N*H+Acc).
 
 %% konverterar talet Int från bas N till bas 10.
 convert_to_ten(Int, Bas) ->
-List = listigt(Int, []),
-conv(List, Bas, length(List)-1, 0).
+    List = listigt(Int, []),
+    conv(List, Bas, length(List)-1, 0).
 
 %% konverterar talet Int som är representerat i bas 10 till bas N.
 convert_to_N(Int, Bas) ->
-S = integer_to_list(Int, Bas),
-{Z, _} = string:to_integer(S),
-Z.
+    S = integer_to_list(Int, Bas),
+    {Z, _} = string:to_integer(S),
+    Z.
 
 convertBase(Str, Bas) ->
-S = lists:reverse(Str),
-S2 = lists:map(fun(X) ->
-if X > 64 ->
-X - 55;
-true ->
-X - 48
-end
-end, S),
-convertBase_(S2, 1, Bas, 0).
+    S = lists:reverse(Str),
+    S2 = lists:map(fun(X) ->
+			   if X > 64 ->
+				   X - 55;
+			      true ->
+				   X - 48
+			   end
+		   end, S),
+    convertBase_(S2, 1, Bas, 0).
 
 
 convertBase_([], _Base, _Orig, Acc) ->
-Acc;
+    Acc;
 convertBase_([Head|Rest], Bas, OrigBas, Acc) ->
-convertBase_(Rest, Bas*OrigBas, OrigBas, Acc + Head*Bas).
+    convertBase_(Rest, Bas*OrigBas, OrigBas, Acc + Head*Bas).
 
 %% @doc Split List into N Lists such that all Lists have approximately the same number of elements. 
 %% 
@@ -244,10 +239,16 @@ split(L, N) ->
 
 
 
-listigt(0, _, List) ->
+listigt(0, List) ->
     List;
-listigt(N, Bas, List) ->
-    listigt((N div Bas),Bas, [(N rem Bas)] ++ List).
+listigt(N, List) ->
+    listigt((N div 10), [(N rem 10)] ++ List).
+
+listIt(_, 0, Acc) ->
+    Acc;
+listIt(Str, Len, Acc) ->
+    listIt(Str, Len -1, [string:substr(Str, Len, 1)]++Acc).
+    
 
 %% adder(A,B) ->
 %%     AR = lists:reverse(A),
@@ -294,58 +295,6 @@ nolligt(A,B,N) ->
        
 
 
-%% Print
-
-len(A, B) ->
-    Alen = length(A),
-    Blen = length(B),
-    if Alen > Blen ->
-	    Alen+1;
-       true -> Blen+1 end.
-
-repeat(Char, N) ->
-    [Char || _ <- lists:seq(1,N)].
-
-line(C, N) ->
-    repeat(C, N).
-
-print_list([]) ->
-    io:fwrite("~n");
-print_list([A|As]) ->
-    io:format("~p", [A]),
-    print_list(As).
-
-fix_len(List, N) ->
-    L = length(List),
-    N - L.
-
-	
-
-print(A, B, Res, C) ->
-    Lin  = line($-, len(A,B)+1),
-    Max  = length(Lin),
-    Alen = fix_len(A, Max),
-    Blen = fix_len(B, Max-1),
-    Rlen = fix_len(Res, Max),
-    Clen = fix_len(C, Max),
-    io:fwrite(line($ , Clen)),
-    print_list(C),
-    io:fwrite(line($ , Alen)),
-    print_list(A),
-    io:fwrite("+"),
-    io:fwrite(line($ , Blen)),
-    print_list(B),
-    io:fwrite(Lin),
-    io:fwrite("~n"),
-    io:fwrite(line($ , Rlen)),
-    print_list(Res).
-
-    
-
-
-
-       
-	   
 
 %% skriv nå fint
 
@@ -412,7 +361,7 @@ nto10(I,Base) ->
 
 %%enkelt test listigt
 listigt_test() ->
-    ?_assertEqual(listigt(1234, 10, []), [1,2,3,4]).
+    ?_assertEqual(listigt(1234, []), [1,2,3,4]).
 
 
 %%enkelt test för listAdder
