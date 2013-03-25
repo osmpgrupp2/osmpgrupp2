@@ -9,12 +9,22 @@
       Base::integer().
 
 start(A,B, Base) ->
-    A1 = A,
-    B1 = B,
-    ChildArray = array:new(length(A1)),
-    ChildArray = mainSpawner(A1,B1,ChildArray,Base),
-    ResultArray = array:ner(length(A1)),
-    ResultArray = mainRecieverLoopiloop(ChildArray, ResultArray, length(A1)).
+    AL = utils:listigt(A,Base,[]),
+    BL = utils:listigt(B,Base,[]),
+    {AN,BN} = utils:nolligt(AL,BL,3),
+    AS = utils:split(AN,3),
+    BS = utils:split(BN,3),
+    io:format("~p ~p ~n",[AS,BS]),
+
+    ChildArray = array:new(length(AS)),
+    io:format("hejhej2 ~n"),
+    ChildArray = mainSpawner(AS,BS,ChildArray,Base),
+    io:format("hejhej3 ~n"),
+    ResultArray = array:new(length(AS)), 
+    io:format("hejhej4 ~n"),
+    ResultArray = mainRecieverLoopiloop(ChildArray, ResultArray, length(AS)), 
+    
+io:format("Print ~p ~n", [ResultArray]).
 %%printa ut saker
 
 %% @doc TODO: add documentation
@@ -85,9 +95,13 @@ findArrayIndex(Item, Array, Index) ->
 mainSpawnerHelp([], _,_ , ChildArray, _, _) ->
     ChildArray;
 mainSpawnerHelp([A | Atl],[B | Btl], 0, ChildArray, Base, ParentPID) ->
-    mainSpawnerHelp(Atl, Btl, 1, array:set(0, spawn(add, spawnChild, [A,B, ParentPID, ParentPID]), ChildArray), Base, ParentPID);
+    io:format("Hit kommer den ~n"),
+    mainSpawnerHelp(Atl, Btl, 1, array:set(0, spawn_link(add, spawnChild, [A,B, ParentPID, ParentPID,Base]), ChildArray), Base, ParentPID);
 mainSpawnerHelp([A | Atl],[B | Btl],Index, ChildArray, Base, ParentPID) ->
-    mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn(add, spawnChild, [A,B, ParentPID, array:get(Index - 1, ChildArray) ]), ChildArray), Base,ParentPID).
+    io:format("Hit kommer den2 ~n"),
+    mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn_link(add, spawnChild, [A,B, ParentPID, array:get(Index - 1, ChildArray),Base ]), ChildArray), Base,ParentPID).
+
+
 
 
 
@@ -100,7 +114,7 @@ mainSpawnerHelp([A | Atl],[B | Btl],Index, ChildArray, Base, ParentPID) ->
       B::nil() | [[integer()]],
       ChildArray::array(), 
       Base::integer(),
-      ChildArray2::array.
+      ChildArray2::array(). 
 
 mainSpawner(A,B,ChildArray,Base) ->
     mainSpawnerHelp(A,B,0,ChildArray, Base, self()).
@@ -118,8 +132,8 @@ mainSpawner(A,B,ChildArray,Base) ->
       Base::integer().
       
 spawnChild(A,B, ParentPID, NextPID, Base) ->
-    spawn(add, spawnBaby, [A, B, 0, Base, self()]),
-    spawn(add, spawnBaby, [A, B, 1, Base, self()]),
+    spawn_link(add, spawnBaby, [A, B, 0, Base, self()]),
+    spawn_link(add, spawnBaby, [A, B, 1, Base, self()]),
     ResultArray = array:new(2),
     spawnChildReceiveLoop(ResultArray, ParentPID, NextPID).
 
@@ -169,4 +183,4 @@ spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
 	      
 spawnBaby(A,B,CarryIn, Base, ParentPID) ->
     %%do some magic
-    ParentPID ! {CarryIn, self(), result}.%someAdder(A,B, CarryIn, Base)}.
+    ParentPID ! {CarryIn, self(), utils:listAdder(A,B,Base,{CarryIn,[]})}.%someAdder(A,B, CarryIn, Base)}.
