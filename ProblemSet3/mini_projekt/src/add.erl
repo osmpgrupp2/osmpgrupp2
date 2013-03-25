@@ -27,9 +27,7 @@ start(A,B, Base) ->
 
     {CarryList, ResultList} = lists:unzip(array:to_list(ResultArray2)),
     TheResultList = lists:append(ResultList),
-    {As, _} = string:to_integer(A),
-    {Bs, _} = string:to_integer(B),
-    utils:print(utils:listIt(A,length(B),[]), utils:listIt(B,length(B),[]), lists:sublist(CarryList,1) ++ TheResultList, CarryList ++ [0]). 
+    utils:print(utils:listIt(A,length(A),[]), utils:listIt(B,length(B),[]), utils:convert_to_N(lists:sublist(CarryList,1) ++ TheResultList, Base), CarryList ++ [0]). 
 
 %% @doc TODO: add documentation
 -spec start(A,B,Base, Options) -> ok when 
