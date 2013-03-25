@@ -157,7 +157,7 @@ spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
 	    exit(Baby, kill);
 	{carryIn, 0} -> %%omm vi får veta att carryIn är 0
 	    case ((array:get(0, ResultArray)) =/= undefined) of
-		true -> %% this line no works....
+		true -> 
 		    NextPID ! {carryIn, element(0, array:get(0, ResultArray))},
 		    ParentPID ! {self(), array:get(0, ResultArray)};
 		false -> 
@@ -184,6 +184,5 @@ spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
 	      
 spawnBaby(A,B,CarryIn, Base, ParentPID) ->
     io:format("spawnBaby ~n"),
-    %%do some magic
-    ParentPID ! {CarryIn, self(), utils:listAdder(A,B,Base,{CarryIn,[]})}.%someAdder(A,B, CarryIn, Base)}.
-%% l
+    ParentPID ! {CarryIn, self(), utils:listAdder(A,B,Base,{CarryIn,[]})}.
+
