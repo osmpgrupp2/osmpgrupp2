@@ -95,10 +95,10 @@ findArrayIndex(Item, Array, Index) ->
 mainSpawnerHelp([], _,_ , ChildArray, _, _) ->
     ChildArray;
 mainSpawnerHelp([A | Atl],[B | Btl], 0, ChildArray, Base, ParentPID) ->
-    io:format("Hit kommer den ~n"),
+    io:format("MainSpawnerHelp/2 ~n"),
     mainSpawnerHelp(Atl, Btl, 1, array:set(0, spawn_link(add, spawnChild, [A,B, ParentPID, ParentPID,Base]), ChildArray), Base, ParentPID);
 mainSpawnerHelp([A | Atl],[B | Btl],Index, ChildArray, Base, ParentPID) ->
-    io:format("Hit kommer den2 ~n"),
+    io:format("MainSpawnerHelp/3 ~n"),
     mainSpawnerHelp(Atl, Btl,Index + 1, array:set(Index, spawn_link(add, spawnChild, [A,B, ParentPID, array:get(Index - 1, ChildArray),Base ]), ChildArray), Base,ParentPID).
 
 
@@ -132,6 +132,7 @@ mainSpawner(A,B,ChildArray,Base) ->
       Base::integer().
       
 spawnChild(A,B, ParentPID, NextPID, Base) ->
+    io:format("spawnChild ~n"),
     spawn_link(add, spawnBaby, [A, B, 0, Base, self()]),
     spawn_link(add, spawnBaby, [A, B, 1, Base, self()]),
     ResultArray = array:new(2),
@@ -182,5 +183,7 @@ spawnChildReceiveLoop(ResultArray, ParentPID, NextPID) ->
       ParentPID::integer().
 	      
 spawnBaby(A,B,CarryIn, Base, ParentPID) ->
+    io:format("spawnBaby ~n"),
     %%do some magic
     ParentPID ! {CarryIn, self(), utils:listAdder(A,B,Base,{CarryIn,[]})}.%someAdder(A,B, CarryIn, Base)}.
+%% l
