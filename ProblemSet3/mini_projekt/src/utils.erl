@@ -270,7 +270,7 @@ listAdderHelp([],[],_,Result) ->
     Result;
 listAdderHelp([A | Atl],[B | Btl],Base,{CarryIn,Result}) ->
     {CarryOut, Sum} = adder(A,B,CarryIn,Base),
-   listAdder(Atl, Btl, Base, {CarryOut,[Sum] ++ Result}).
+   listAdderHelp(Atl, Btl, Base, {CarryOut,[Sum] ++ Result}).
 
 % [Sum] ++ Result
 
