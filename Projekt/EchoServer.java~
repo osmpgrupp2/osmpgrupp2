@@ -1,0 +1,29 @@
+import com.ericsson.otp.erlang.*;
+ 
+public class EchoServer {
+    public static void main(String[] args) throws Exception {
+        OtpNode node = new OtpNode("d@ubuntu","zed");
+        OtpMbox mbox = node.createMbox("echo");
+        OtpErlangAtom SHUTDOWN = new OtpErlangAtom("shutdown");
+        while (true) {
+	    System.out.println("Tjeenna");
+            OtpErlangObject message = mbox.receive();
+System.out.println("Tjeenna");
+            System.out.println(mbox.self() + " received: " + message);
+System.out.println("Tjeenna");
+            if (SHUTDOWN.equals(message)) {
+System.out.println("Tjeenna");
+                System.out.println(mbox.self()+ " shutting down..." );
+                break;
+            } else if (message instanceof OtpErlangTuple) {
+System.out.println("Tjeenna");
+                OtpErlangTuple messageTuple = (OtpErlangTuple) message;
+                if (messageTuple.arity() == 2 && messageTuple.elementAt(0) instanceof OtpErlangPid) {
+                    OtpErlangPid sender = (OtpErlangPid) messageTuple.elementAt(0);
+                    OtpErlangObject sendersMessage = messageTuple.elementAt(1);
+                    mbox.send(sender, sendersMessage);
+                }
+            }
+        }
+    }
+}
