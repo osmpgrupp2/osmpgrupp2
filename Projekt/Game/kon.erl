@@ -5,16 +5,23 @@
 
 -module(kon).
 
+-import(random).
+-import(timer).
+-import(testing.erl).
+
+
 %% ====================================================================
 %% API functions
 %% ====================================================================
--export([rec/0,res/0,reccar/1]).
+-export([rec/0,res/0,rand/0]).
 
 
 
 %% ====================================================================
 %% Internal functions
 %% ====================================================================
+
+%% meddelanden ska skickas på detta format: {move/add/delete, ship/meteor/shot, left/right eller pid}
 
 
 res() ->
@@ -23,16 +30,24 @@ res() ->
     io:format("~p~n",[Text]),
     Nod = erlang:nodes(this),
     io:format("~p~n",[Nod]),
+
     receive
 	{left} ->
 	    io:format("left~n",[]),
-	    {boxarn,hoppsansa@ubuntu} ! {self(), 10},
+	    {boxarn,hoppsansa@ubuntu} ! {move,ship,left},
 	    res();
 	{right} ->
 	    io:format("right~n",[]),
-	    {boxarn,hoppsansa@ubuntu} ! {self(), 10},
-	    res()
-		
+
+
+
+
+
+	    {boxarn,hoppsansa@ubuntu} ! {move,ship,right},
+	    res();
+	{space} ->
+	    io:format("space~n",[])
+
 		
     end.
 
@@ -43,23 +58,12 @@ rec() ->
     io:format("~p~n",[Text]),
     Nod = erlang:nodes(this),
     io:format("~p~n",[Nod]),
-    {boxarn,hoppsansa@ubuntu} ! {self(), 10},
-    receive
-	{left} ->
-	    io:format("left~n",[]),
-	    {boxarn,hoppsansa@ubuntu} ! {self(), 10},
-	    res();
-	{right} ->
-	    io:format("right~n",[]),
-	    {boxarn,hoppsansa@ubuntu} ! {self(), 10},
-	    res()
+    {boxarn,hoppsansa@ubuntu} ! {self()},
+    res().
 
-
-    end.
-
-reccar(right) ->
-    10;
-reccar(left) ->
-    -10.
-
+rand() ->
+    testing:test(),
+    Rand = random:seed(2,5,8),
+    {X,Y,Z} = Rand,
+    io:format("~p~n",[X]).
 
