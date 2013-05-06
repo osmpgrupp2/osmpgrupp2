@@ -7,72 +7,119 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
-	
-
+import java.util.Iterator;
 import javax.imageio.ImageIO;
+import com.ericsson.otp.erlang.*;
+
 
 public class GameLoop extends Applet implements Runnable, KeyListener {
-		
-	public static int x,y;
-	public static Image off;
-	public static Graphics d;
-	public static boolean up,down,left,right;
-	public static Image images;
-	public static Image ship;
 
+	private static int gameHeight = 480;
+	private static int gameWidth = 854;
+	private GameBoard gameBoard = new GameBoard(gameHeight, gameWidth);
+
+	private static Image off;
+	private static Graphics d;
+	private static boolean up,down,left,right;
+	private static Image background;
+	private static Image ship;
+	private static Image shot;
+	private static Image meteor;
 	
-	
-	
-	
-	
+	OptNode MyNode = new OptNode("hoppsansa", "hojjsa");
+	OptMbox MyBox = MyNode.createMbox("boxarn");
+
+
+
 	public void run() {
-	
-		x = 100;
-		y = 100;
 		try {
-		    images = ImageIO.read(new File("spaceinvaders.gif"));
-		    ship = ImageIO.read(new File("vitt.jpg"));
+			background = ImageIO.read(new File("spaceinvaders.gif"));
+			ship = ImageIO.read(new File("vitt.jpg"));
+			shot = ImageIO.read(new File("green.jpg"));
+			meteor = ImageIO.read(new File("pink.jpg"));
 		} catch (IOException e) {
 		}
+
+		//ta emot pid från erlang mejlbox
+
+
+
 		while(true){
+
+			//ta emot meddelande
+
 			if(left == true){
-				x = x-10;
+				gameBoard.moveSpaceShip(-10);
 			}
 			if(right == true){
-				x= x+10;
-			}
-			if(down == true){
-				y = y+ 10;
-			}
-			if(up == true){
-				y = y-10;
+				gameBoard.moveSpaceShip(10);
 			}
 			repaint();
-		try {
-			Thread.sleep(10);
-		} catch (InterruptedException e) {
-			
-			e.printStackTrace();
-		}
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+
+				e.printStackTrace();
+			}
 		}
 	}
+	public void init(){
+		setSize(gameWidth,gameHeight);
+		Thread th = new Thread(this);
+		th.start();
+
+		off = createImage(gameWidth,gameHeight);
+		d = off.getGraphics();
+		addKeyListener(this);
+	}
+
+	public void paint(Graphics g){
+		d.clearRect(0, 0, gameWidth, gameHeight);
+		d.drawImage(background, 0, 0,gameWidth, gameHeight, this);
+		d.drawImage(ship, gameBoard.getSpaceShipX(), gameBoard.getSpaceShipY(), 20, 20, this);
+
+		Iterator<GameObject> GameObjectIterator = gameBoard.getMeteorList().iterator();
+		GameObject currentGameObject;
+
+		/*Meteors*/
+		while(GameObjectIterator.hasNext()){
+			currentGameObject = GameObjectIterator.next();
+			d.drawImage(meteor, gameBoard.getGameObjectX(currentGameObject), gameBoard.getGameObjectY(currentGameObject), 20, 20, this);
+		}
+
+		/*Shots*/
+		GameObjectIterator = gameBoard.getShotList().iterator();
+		while(GameObjectIterator.hasNext()){
+			currentGameObject = GameObjectIterator.next();
+			d.drawImage(shot, gameBoard.getGameObjectX(currentGameObject), gameBoard.getGameObjectY(currentGameObject), 20, 20, this);
+		}
+		g.drawImage(off,0,0,this); 
+	}
+
+	public void update(Graphics g){
+		paint(g);
+	}
+
+
+
+
+
+
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		if(e.getKeyCode() == 37){
+		int keyCode = e.getKeyCode();
+		switch( keyCode ) { 
+		case KeyEvent.VK_LEFT:
 			left = true;
-		}
-		if(e.getKeyCode() == 38){
-			up = true;
-		}
-		if(e.getKeyCode() == 39){
+			break;
+		case KeyEvent.VK_RIGHT :
 			right = true;
+			break;
+		case KeyEvent.VK_SPACE:
+			//space
+			break;
 		}
-		if(e.getKeyCode() == 40){
-			down = true;
-		}
-		
 	}
 
 	@Override
@@ -92,9 +139,8 @@ public class GameLoop extends Applet implements Runnable, KeyListener {
 	}
 
 	@Override
-	public void keyTyped(KeyEvent arg0) {
-		
-		
+	public void keyTyped(KeyEvent e) {
+
 	}
 
 }
