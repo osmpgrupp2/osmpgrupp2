@@ -12,10 +12,16 @@ import javax.imageio.ImageIO;
 import com.ericsson.otp.erlang.*;
 
 
-public class GameLoop extends Applet implements Runnable, KeyListener {
 
-	private static int gameHeight = 480;
-	private static int gameWidth = 854;
+// meddelanden ska skickas på detta format: {move/add/delete, ship/meteor/shot, left/right eller pid}
+
+
+
+
+public class GameLoop extends Applet implements Runnable, KeyListener{
+
+	private static int gameHeight = 600;
+	private static int gameWidth = 1000;
 	private GameBoard gameBoard = new GameBoard(gameHeight, gameWidth);
 
 	private static Image off;
@@ -26,9 +32,10 @@ public class GameLoop extends Applet implements Runnable, KeyListener {
 	private static Image shot;
 	private static Image meteor;
 	
-	OptNode MyNode = new OptNode("hoppsansa", "hojjsa");
-	OptMbox MyBox = MyNode.createMbox("boxarn");
-
+	public OtpNode MyNode;
+	public OtpMbox MyBox; 
+	public OtpErlangPid erlangpid;
+	public OtpErlangObject object = null;
 
 
 	public void run() {
@@ -39,31 +46,68 @@ public class GameLoop extends Applet implements Runnable, KeyListener {
 			meteor = ImageIO.read(new File("pink.jpg"));
 		} catch (IOException e) {
 		}
+		
+		// tar emot pid ifrån erlang
+		try {
+			object = MyBox.receive();
+		} catch (OtpErlangExit e1) {
+			System.out.println("fel i mybox receive1");
+			e1.printStackTrace();
+		} catch (OtpErlangDecodeException e1) {
+			System.out.println("fel i mybox receive2");
+			e1.printStackTrace();
+		}
 
-		//ta emot pid fr�n erlang mejlbox
+		OtpErlangTuple tuple = (OtpErlangTuple) object;
+		erlangpid = (OtpErlangPid) tuple.elementAt(0);
 
 
 
+		repaint();
 		while(true){
 
-			//ta emot meddelande
-
-			if(left == true){
-				gameBoard.moveSpaceShip(-10);
-			}
-			if(right == true){
-				gameBoard.moveSpaceShip(10);
-			}
-			repaint();
 			try {
+				object = MyBox.receive();
+			} catch (OtpErlangExit e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (OtpErlangDecodeException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+			// beslut innehåller: add, remove, move
+			
+			tuple = (OtpErlangTuple) object;
+			OtpErlangAtom beslut = (OtpErlangAtom) tuple.elementAt(0);
+			if(beslut.equals(new OtpErlangAtom("add"))){
+				
+			}else if(beslut.equals(new OtpErlangAtom("remove"))){
+				
+			}else{						//beslut == move
+				if(tuple.elementAt(2).equals(new OtpErlangAtom("left"))){
+				gameBoard.moveSpaceShip(-10);
+				}
+				else gameBoard.moveSpaceShip(10);
+			}
+
+			
+			repaint();
+/*			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) {
 
 				e.printStackTrace();
-			}
+			}*/
 		}
 	}
-	public void init(){
+	public void init() {
+		try{
+			MyNode = new OtpNode("hoppsansa", "hojjsa");
+			MyBox = MyNode.createMbox("boxarn");
+		}catch(Exception e){
+			System.out.println("skapar mynode, mbox" + e);
+		}
 		setSize(gameWidth,gameHeight);
 		Thread th = new Thread(this);
 		th.start();
@@ -109,15 +153,44 @@ public class GameLoop extends Applet implements Runnable, KeyListener {
 	@Override
 	public void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
+		OtpErlangObject[] sends;
+		OtpErlangTuple tuup;
 		switch( keyCode ) { 
 		case KeyEvent.VK_LEFT:
-			left = true;
+			sends = new OtpErlangObject[1];	
+			
+			sends[0] = new OtpErlangAtom("left") ;
+			//sends[1] = number;
+			
+			tuup = new OtpErlangTuple(sends);
+			
+			MyBox.send(erlangpid, tuup);
+			
+			//left = true;
 			break;
 		case KeyEvent.VK_RIGHT :
-			right = true;
+			sends = new OtpErlangObject[1];	
+			
+			sends[0] = new OtpErlangAtom("right") ;
+			//sends[1] = number;
+			
+			tuup = new OtpErlangTuple(sends);
+			
+			MyBox.send(erlangpid, tuup);
+			
+			
+			//right = true;
 			break;
 		case KeyEvent.VK_SPACE:
-			//space
+			sends = new OtpErlangObject[1];	
+			
+			sends[0] = new OtpErlangAtom("space") ;
+			//sends[1] = number;
+			
+			tuup = new OtpErlangTuple(sends);
+			
+			MyBox.send(erlangpid, tuup);
+			
 			break;
 		}
 	}
