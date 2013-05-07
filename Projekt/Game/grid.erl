@@ -60,8 +60,8 @@ check_elem(Row, Column, Matrix) ->
     S = find_elem(Row, Column, Matrix),
     if S == {0} ->
 	    {true,0};
-       S == {1} ->
-	    {false,1};
+       S =:= {1} ->
+	    {false,{1};
        S == {2} ->
 	    {false,2};
        S == {3} ->
