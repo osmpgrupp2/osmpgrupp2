@@ -13,7 +13,7 @@ import com.ericsson.otp.erlang.*;
 
 
 
-// meddelanden ska skickas på detta format: {move/add/delete, ship/meteor/shot, left/right eller pid}
+// meddelanden ska skickas på detta format: {move/add/delete, ship/meteor/shot, left/right eller pid eller {pid, pos}}
 
 
 
@@ -31,11 +31,11 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	private static Image ship;
 	private static Image shot;
 	private static Image meteor;
-	
-	public OtpNode MyNode;
-	public OtpMbox MyBox; 
-	public OtpErlangPid erlangpid;
-	public OtpErlangObject object = null;
+
+	private OtpNode MyNode;
+	private OtpMbox MyBox; 
+	private OtpErlangPid erlangpid;
+	private OtpErlangObject object = null;
 
 
 	public void run() {
@@ -46,7 +46,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			meteor = ImageIO.read(new File("pink.jpg"));
 		} catch (IOException e) {
 		}
-		
+
 		// tar emot pid ifrån erlang
 		try {
 			object = MyBox.receive();
@@ -60,8 +60,6 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 
 		OtpErlangTuple tuple = (OtpErlangTuple) object;
 		erlangpid = (OtpErlangPid) tuple.elementAt(0);
-
-
 
 		repaint();
 		while(true){
@@ -77,28 +75,56 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			}
 
 			// beslut innehåller: add, remove, move
-			
+
 			tuple = (OtpErlangTuple) object;
 			OtpErlangAtom beslut = (OtpErlangAtom) tuple.elementAt(0);
-			if(beslut.equals(new OtpErlangAtom("add"))){
-				
-			}else if(beslut.equals(new OtpErlangAtom("remove"))){
-				
-			}else{						//beslut == move
-				if(tuple.elementAt(2).equals(new OtpErlangAtom("left"))){
-				gameBoard.moveSpaceShip(-10);
-				}
-				else gameBoard.moveSpaceShip(10);
-			}
-
+			OtpErlangAtom type = (OtpErlangAtom) tuple.elementAt(1);
+			OtpErlangObject arg = (OtpErlangObject) tuple.elementAt(2);
 			
-			repaint();
-/*			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
+			
+			if(beslut.equals(new OtpErlangAtom("add"))){
+				String pid = ((OtpErlangPid) arg).toString();
+				int pos = 0;
+				try {
+					pos = ((OtpErlangInt) arg).intValue();
+				} catch (OtpErlangRangeException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if(type.equals(new OtpErlangAtom("meteor"))){
+					gameBoard.addMeteor(pid, pos);
+				}
+				else{ //type == shot
+					gameBoard.addShot(pid, pos);
+				}
 
-				e.printStackTrace();
-			}*/
+			}
+			else if(beslut.equals(new OtpErlangAtom("remove"))){
+				if(type.equals(new OtpErlangAtom("meteor"))){
+					gameBoard.removeMeteor(arg.toString());
+				}
+				else{ //type == shot
+					gameBoard.removeShot(arg.toString());
+				}
+			}
+			else{						//beslut == move
+				if(type.equals(new OtpErlangAtom("ship"))){
+					OtpErlangAtom direction = (OtpErlangAtom) arg;
+					if(direction.equals(new OtpErlangAtom("left"))){
+						gameBoard.moveSpaceShip(-10);
+					}
+					else{ //direction == right
+						gameBoard.moveSpaceShip(10);
+					}
+				}
+				else if(type.equals(new OtpErlangAtom("meteor"))){ 
+					gameBoard.moveMeteor(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), -10);
+				}
+				else{ //type == shot
+					gameBoard.moveShot(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), 10);
+				}
+			}
+			repaint();
 		}
 	}
 	public void init() {
@@ -145,11 +171,6 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	}
 
 
-
-
-
-
-
 	@Override
 	public void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
@@ -158,64 +179,50 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		switch( keyCode ) { 
 		case KeyEvent.VK_LEFT:
 			sends = new OtpErlangObject[1];	
-			
+
 			sends[0] = new OtpErlangAtom("left") ;
 			//sends[1] = number;
-			
+
 			tuup = new OtpErlangTuple(sends);
-			
+
 			MyBox.send(erlangpid, tuup);
-			
+
 			//left = true;
 			break;
 		case KeyEvent.VK_RIGHT :
 			sends = new OtpErlangObject[1];	
-			
+
 			sends[0] = new OtpErlangAtom("right") ;
 			//sends[1] = number;
-			
+
 			tuup = new OtpErlangTuple(sends);
-			
+
 			MyBox.send(erlangpid, tuup);
-			
-			
+
+
 			//right = true;
 			break;
 		case KeyEvent.VK_SPACE:
 			sends = new OtpErlangObject[1];	
-			
+
 			sends[0] = new OtpErlangAtom("space") ;
 			//sends[1] = number;
-			
+
 			tuup = new OtpErlangTuple(sends);
-			
+
 			MyBox.send(erlangpid, tuup);
-			
+
 			break;
 		}
 	}
-
 	@Override
-	public void keyReleased(KeyEvent e) {
-		if(e.getKeyCode() == 37){
-			left = false;
-		}
-		if(e.getKeyCode() == 38){
-			up = false;
-		}
-		if(e.getKeyCode() == 39){
-			right = false;
-		}
-		if(e.getKeyCode() == 40){
-			down = false;
-		}
+	public void keyReleased(KeyEvent arg0) {
+		
 	}
-
 	@Override
-	public void keyTyped(KeyEvent e) {
-
+	public void keyTyped(KeyEvent arg0) {
+		
 	}
-
 }
 
 
