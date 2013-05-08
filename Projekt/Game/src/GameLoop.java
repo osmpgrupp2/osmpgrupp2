@@ -4,7 +4,6 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -26,7 +25,6 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 
 	private static Image off;
 	private static Graphics d;
-	private static boolean up,down,left,right;
 	private static Image background;
 	private static Image ship;
 	private static Image shot;
@@ -48,35 +46,23 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		}
 
 		// tar emot pid ifrån erlang
-		try {
-			object = MyBox.receive();
-		} catch (OtpErlangExit e1) {
-			System.out.println("fel i mybox receive1");
-			e1.printStackTrace();
-		} catch (OtpErlangDecodeException e1) {
-			System.out.println("fel i mybox receive2");
-			e1.printStackTrace();
-		}
-
-		OtpErlangTuple tuple = (OtpErlangTuple) object;
-		erlangpid = (OtpErlangPid) tuple.elementAt(0);
-
+		
 		repaint();
 		while(true){
 
 			try {
 				object = MyBox.receive();
 			} catch (OtpErlangExit e1) {
-				// TODO Auto-generated catch block
+				
 				e1.printStackTrace();
 			} catch (OtpErlangDecodeException e1) {
-				// TODO Auto-generated catch block
+				
 				e1.printStackTrace();
 			}
 
 			// beslut innehåller: add, remove, move
 
-			tuple = (OtpErlangTuple) object;
+			OtpErlangTuple tuple = (OtpErlangTuple) object;
 			OtpErlangAtom beslut = (OtpErlangAtom) tuple.elementAt(0);
 			OtpErlangAtom type = (OtpErlangAtom) tuple.elementAt(1);
 			OtpErlangObject arg = (OtpErlangObject) tuple.elementAt(2);
@@ -88,7 +74,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				try {
 					pos = ((OtpErlangInt) arg).intValue();
 				} catch (OtpErlangRangeException e) {
-					// TODO Auto-generated catch block
+				
 					e.printStackTrace();
 				}
 				if(type.equals(new OtpErlangAtom("meteor"))){
@@ -107,6 +93,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 					gameBoard.removeShot(arg.toString());
 				}
 			}
+			
 			else{						//beslut == move
 				if(type.equals(new OtpErlangAtom("ship"))){
 					OtpErlangAtom direction = (OtpErlangAtom) arg;
@@ -134,6 +121,29 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		}catch(Exception e){
 			System.out.println("skapar mynode, mbox" + e);
 		}
+		
+		try {
+			object = MyBox.receive();
+		} catch (OtpErlangExit e1) {
+			System.out.println("fel i mybox receive1");
+			e1.printStackTrace();
+		} catch (OtpErlangDecodeException e1) {
+			System.out.println("fel i mybox receive2");
+			e1.printStackTrace();
+		}
+
+		OtpErlangTuple tuple = (OtpErlangTuple) object;
+		erlangpid = (OtpErlangPid) tuple.elementAt(0);
+		OtpErlangInt width = (OtpErlangInt) tuple.elementAt(1);
+		OtpErlangInt height = (OtpErlangInt) tuple.elementAt(2);
+		
+		try {
+			gameWidth = width.intValue();
+			gameHeight = height.intValue();
+		} catch (OtpErlangRangeException e) {
+			e.printStackTrace();
+		}
+
 		setSize(gameWidth,gameHeight);
 		Thread th = new Thread(this);
 		th.start();
