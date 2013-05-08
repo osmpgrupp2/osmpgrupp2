@@ -61,12 +61,12 @@ check_elem(Row, Column, Matrix) ->
     if S == {0} ->
 	    {true,0};
        S =:= {1} ->
-	    {false,{1};
+	    {false,1};
        S == {2} ->
 	    {false,2};
        S == {3} ->
 	    {false,3};
-       true -> {false,4}
+       true -> {false,3} %% SKA VARA EN FYRA!
     end.
 
 

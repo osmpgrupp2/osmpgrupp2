@@ -69,14 +69,23 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			
 			
 			if(beslut.equals(new OtpErlangAtom("add"))){
-				String pid = ((OtpErlangPid) arg).toString();
+				OtpErlangTuple hej = (OtpErlangTuple) arg;
+				String pid = ((OtpErlangPid) hej.elementAt(0)).toString();			// Ett försök att rätta till.
+				int pos = 0;
+				
+				try {
+					pos = ((OtpErlangLong) hej.elementAt(1)).intValue();
+				} catch (OtpErlangRangeException e) {
+					e.printStackTrace();
+				}
+				/*String pid = ((OtpErlangPid) arg).toString();  //Detta blir en tupel med {pid,pos}.
 				int pos = 0;
 				try {
 					pos = ((OtpErlangInt) arg).intValue();
 				} catch (OtpErlangRangeException e) {
 				
 					e.printStackTrace();
-				}
+				}*/
 				if(type.equals(new OtpErlangAtom("meteor"))){
 					gameBoard.addMeteor(pid, pos);
 				}
@@ -105,7 +114,10 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 					}
 				}
 				else if(type.equals(new OtpErlangAtom("meteor"))){ 
-					gameBoard.moveMeteor(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), -10);
+					
+					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), -10); // VA SKA DET VARA HÄR?
+					
+					//gameBoard.moveMeteor(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), -10);
 				}
 				else{ //type == shot
 					gameBoard.moveShot(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), 10);
@@ -121,7 +133,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		}catch(Exception e){
 			System.out.println("skapar mynode, mbox" + e);
 		}
-		
+		System.out.println("hej");
 		try {
 			object = MyBox.receive();
 		} catch (OtpErlangExit e1) {
@@ -134,8 +146,8 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 
 		OtpErlangTuple tuple = (OtpErlangTuple) object;
 		erlangpid = (OtpErlangPid) tuple.elementAt(0);
-		OtpErlangInt width = (OtpErlangInt) tuple.elementAt(1);
-		OtpErlangInt height = (OtpErlangInt) tuple.elementAt(2);
+		OtpErlangLong width = (OtpErlangLong) tuple.elementAt(1);
+		OtpErlangLong height = (OtpErlangLong) tuple.elementAt(2);
 		
 		try {
 			gameWidth = width.intValue();
