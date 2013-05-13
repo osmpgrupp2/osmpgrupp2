@@ -1,6 +1,6 @@
 -module(grid).
 
--export([matrix/1,find_elem/3, change_elem/4, move_elem_down/4, move_elem_up/4, move_elem_l/4, move_elem_r/4,check_elem/3]).
+-export([matrix/1,find_elem/3, change_elem/4, move_elem_down/4, move_elem_up/4, move_elem_l/4, move_elem_r/4,check_elem/3, check_boundry/1]).
 
 %% To use EUnit we must include this:
 -include_lib("eunit/include/eunit.hrl").
@@ -33,11 +33,11 @@ change_elem(Elem, Row, Column, Matrix) ->
     E.
     
 move_elem_down(Elem, Row, Column, Matrix ) ->
-    Y = Row + 1,   
+    Y = Row + 1,  
     A = change_elem(Elem, Y, Column, Matrix),
     B = change_elem(0, Row, Column, A),
     B.
-
+  
 move_elem_up(Elem, Row, Column, Matrix) ->
     Y = Row -1,
     A = change_elem(Elem, Y, Column, Matrix),
@@ -57,17 +57,30 @@ move_elem_l(Elem, Row, Column, Matrix) ->
     B.
 
 check_elem(Row, Column, Matrix) ->
-    S = find_elem(Row, Column, Matrix),
-    if S == {0} ->
-	    {true,0};
-       S =:= {1} ->
-	    {false,1};
-       S == {2} ->
-	    {false,2};
-       S == {3} ->
-	    {false,3};
-       true -> {false,3} %% SKA VARA EN FYRA!
-    end.
+    R = check_boundry(Row),
+    C = check_boundry(Column),
+    
+    if (R == {true} andalso C == {true}) ->
+
+	S = find_elem(Row, Column, Matrix),
+	if S == {0} ->
+		{true,0};
+	   S == {1} ->
+		{false,1};
+	   S == {2} ->
+		{false,2};
+	   S == {3} ->
+		{false,3};
+	   true -> {false,3} %% SKA VARA EN FYRA!
+	end;
+   true ->
+	{false,boundry}
+end.
 
 
-
+check_boundry(Point) ->
+    if (Point < 11 andalso Point > 0) ->
+	     {true};
+	true ->
+	     {false}
+     end.
