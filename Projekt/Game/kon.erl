@@ -62,7 +62,7 @@ start() ->
     CheckerStart = spawn_link(kon,checkerStart,[10]),
     _Counter = spawn_link(kon,counter,[CheckerStart]),
     ShotCreator = spawn_link(kon,shotCreator,[CheckerStart,4]), %DETTA SKA VARA SKEPPETS X KORDINAT!!!!!
-    _MeteorCreator = spawn_link(kon,meteorCreator,[CheckerStart,1]), %Detta ska vara en hårdkodad siffra!
+    _MeteorCreator = spawn_link(kon,meteorCreator,[CheckerStart,0]), %Detta ska vara en hårdkodad siffra!
     res(CheckerStart, ShotCreator).
 
 
@@ -117,22 +117,29 @@ checker(Matrix,L) ->
 	{meteor,{X,Y},MPID} ->
 	    io:format("Flytta Meteor~n"),
 	    {Bool, Type} = grid:check_elem((Y+1),X,Matrix),
+			      
 	    io:format("~p ~p ~n",[Matrix,Bool]),
-	    timer:sleep(5000),
 	    if Bool == true ->
 		    NewMatrix = grid:move_elem_down(2,Y,X,Matrix),
+		    U = lists:keyreplace(MPID,2,L,{2,MPID,{X,(Y+1)}}),
 		    {boxarn,hoppsansa@ubuntu} ! {move,meteor,MPID},
-		    checker(NewMatrix,L);	   
-
+		    checker(NewMatrix,U);	   
 	       true ->
 		    case Type of 
 			1 ->
 			    io:format("Gamal meteor, krock med ett skott");
 			2 ->
-			    io:format("Gammal meteor, krock med ett meteor~n"), 
+			    io:format("Gammal meteor, krock med en meteor~n"), 
 			    checker(Matrix,L);
 			3 -> 
-			    io:format("Gamal meteor, krock med ett skepp~n")
+			    io:format("Gamal meteor, krock med ett skepp~n");
+			boundry ->
+			    U = lists:keydelete(MPID,2,L),
+			    {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},
+			    NewMatrix = grid:change_elem(0,Y,X,Matrix),
+			    exit(MPID,normal),
+			    checker(NewMatrix,U)
+			    
 		       end
 	    end;
 	    
@@ -141,6 +148,7 @@ checker(Matrix,L) ->
 	    {Bool, Type} = grid:check_elem(Y-1,X,Matrix),
 	    if Bool == true ->
 		    NewMatrix = grid:move_elem_up(1,Y,X,Matrix),
+		    %Uppdatera listan!!!
 		    {boxarn,hoppsansa@ubuntu} ! {move,shot,SPID},
 		    checker(NewMatrix,L);
 	       true -> case Type of
@@ -150,20 +158,22 @@ checker(Matrix,L) ->
 			       io:format("Gamalt skott,krock med ett meteor~n"), 
 			       checker(Matrix,L);
 			   3 -> 
-			       io:format("Gamalt skott,krock med ett skepp~n")
+			       io:format("Gamalt skott,krock med ett skepp~n");
+			   boundry ->
+			       U = lists:keydelete(SPID,2,L),
+			       {boxarn,hoppsansa@ubuntu} ! {remove,meteor,SPID},
+			       exit(SPID,kill),
+			       checker(Matrix,U)
 		       end
 	    end;
 	
 	{meteor,{X,Y},MPID,1} ->
 	    io:format("Ny meteor"),
-	    {Bool,Type} = grid:check_elem ((Y+1),X,Matrix),
+	    {Bool,Type} = grid:check_elem (1,X,Matrix),
 	    if Bool == true ->
-		    if Y == 0 ->
-			    NewMatrix = grid:change_elem(2,1,X,Matrix);
-		       true ->  
-			    NewMatrix = grid:change_elem(2,Y,X,Matrix)
-		    end,
+		    NewMatrix = grid:change_elem(2,1,X,Matrix),
 		    U = lists:append(L,[{2,MPID,{X,Y}}]),
+		    io:format("~p",[U]),
 		    P = (X * 100),
 		    {boxarn,hoppsansa@ubuntu} ! {add,meteor,{MPID,P}},
 		    checker(NewMatrix,U);
@@ -201,7 +211,7 @@ checker(Matrix,L) ->
 	    % iterera_over_listan,L och skicka meddelande till processerna som ska förflyttas.
 	    
 	    lists:keymap(fun(N) ->
-				 N ! {move %lists:keyfind(N,2,L) 
+				 N ! {move , lists:keyfind(N,2,L) 
 				     } end,2,L),
 	    checker(Matrix,L)
 	end.
@@ -209,10 +219,10 @@ checker(Matrix,L) ->
 
 meteorCreator(CheckerStart,X) ->
     timer:sleep(4000),    
-    O = (X rem 10) +1 , 
+    O = ((X rem 10) +1) , 
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
-    CheckerStart ! {meteor,{O,0},MeteorPID,1},
-    meteorCreator(CheckerStart,(O+1)).
+    CheckerStart ! {meteor,{O,1},MeteorPID,1},
+    meteorCreator(CheckerStart,O).
 
 shotCreator(CheckerStart,X) ->
 
@@ -238,9 +248,9 @@ spawnShot(Checker) ->
 
 spawnMeteor(Checker) ->
     receive
-	{move %,{_S,Pid,{X,Y}}
+	{move,{_S,Pid,{X,Y}}
 	} ->
-	    Checker ! {meteor,{2,7},self()},  %% SKA VARA X;Y!!!!
+	    Checker ! {meteor,{X,Y},Pid},  %% SKA VARA X;Y!!!!
 	    spawnMeteor(Checker)
 		
 	end.

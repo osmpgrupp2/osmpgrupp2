@@ -1,0 +1,5 @@
+start(X) ->
+    O = (X rem 10),
+    io:format("~p",[O]),
+    timer:sleep(1000),
+	start(O+1).

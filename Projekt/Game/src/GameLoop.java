@@ -89,6 +89,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				
 					e.printStackTrace();
 				}*/
+				
 				if(type.equals(new OtpErlangAtom("meteor"))){
 					gameBoard.addMeteor(pid, pos);
 				}
@@ -118,7 +119,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				}
 				else if(type.equals(new OtpErlangAtom("meteor"))){ 
 					
-					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), (gameHeight / 10)); // VA SKA DET VARA HÄR?
+					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), gameHeight / 10); // VA SKA DET VARA HÄR?
 					
 					//gameBoard.moveMeteor(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), -10);
 				}
@@ -153,8 +154,8 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		OtpErlangLong height = (OtpErlangLong) tuple.elementAt(2);
 		
 		try {
-			gameWidth = width.intValue();
-			gameHeight = height.intValue();
+			gameWidth = width.intValue()+100;
+			gameHeight = height.intValue() +100;
 		} catch (OtpErlangRangeException e) {
 			e.printStackTrace();
 		}
