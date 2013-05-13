@@ -35,19 +35,19 @@ res(Checker, ShotCreator) ->
     io:format("~p~n",[Nod]),
 
     receive
-	{left} ->
+	{left,X,Y} ->
 	    io:format("left~n",[]),
-	    Checker ! {ship,{x,y},left}, %% {x,y} ska vara den faktiska positionen för skeppet
+	    Checker ! {ship,{X,Y},left}, %% {x,y} ska vara den faktiska positionen för skeppet
 	    
 	    res(Checker, ShotCreator);
-	{right} ->
+	{right,X,Y} ->
 	    io:format("right~n",[]),
-	    Checker ! {ship,{x,y},right}, %% {x,y} ska vara den faktiska positionen för skeppet
+	    Checker ! {ship,{X,Y},right}, %% {x,y} ska vara den faktiska positionen för skeppet
 	    
 	    res(Checker, ShotCreator);
-	{space} ->
+	{space,X,_Y} ->
 	    io:format("space~n",[]),
-	    ShotCreator ! {new},
+	    ShotCreator ! {new,X},
 		res(Checker, ShotCreator)		
     end.
 
@@ -76,9 +76,10 @@ checkerStart(N) ->
 checker(Matrix,L) ->
     receive
 	{ship,{X,Y},left} ->
-	    {Bool, Type} = grid:check_elem(X-1,Y,Matrix),
-	    if Bool ->
-		    NewMatrix = grid:move_elem_l(3,X,Y,Matrix),
+	    io:format("Flytta skepp vänster"),
+	    {Bool, Type} = grid:check_elem(Y,X-1,Matrix),
+	    if Bool == true ->
+		    NewMatrix = grid:move_elem_l(3,Y,X,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,ship,left},
 		    checker(NewMatrix,L);
 	       true ->
@@ -87,14 +88,15 @@ checker(Matrix,L) ->
 			    skott;
 
 			2 ->
-			    meteor
+			    io:format("meteor")
 		    end
 	    end;
 
 	{ship,{X,Y},right} ->
-	    {Bool, Type} = grid:check_elem(X+1,Y,Matrix),
-	    if Bool ->
-		    NewMatrix = grid:move_elem_r(3,X,Y,Matrix),
+	    io:format("Flytta skepp höger"),
+	    {Bool, Type} = grid:check_elem(Y,X+1,Matrix),
+	    if Bool == true ->
+		    NewMatrix = grid:move_elem_r(3,Y,X,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,ship,right},
 		    checker(NewMatrix,L);
 	       true ->
@@ -102,64 +104,71 @@ checker(Matrix,L) ->
 			1 ->
 			    skott;
 			2 -> 
-			    meteor
+			    io:format("meteor")
 		    end
 	    end;
 
 	{meteor,{X,Y},MPID} ->
-	    {Bool, Type} = grid:check_elem(X,Y+1,Matrix),
-	    if Bool ->
-		    NewMatrix = grid:move_elem_down(2,X,Y,Matrix),
+	    io:format("Flytta Meteor~n"),
+	    {Bool, Type} = grid:check_elem(Y+1,X,Matrix),
+	    if Bool == true ->
+		    NewMatrix = grid:move_elem_down(2,Y,X,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,meteor,MPID},
 		    checker(NewMatrix,L);
 	       true ->
 		    case Type of 
-			   1 ->
-			       skott;
-			   3 -> 
-			       ship
+			1 ->
+			    io:format("skott");
+			2 ->
+			    io:format("meteor~n"), 
+			    checker(Matrix,L);
+			3 -> 
+			    ship
 		       end
 	    end;
 
 	{shot,{X,Y},SPID} ->
-	    {Bool, Type} = grid:check_elem(X,Y-1,Matrix),
-	    if Bool ->
-		    NewMatrix = grid:move_elem_up(1,X,Y,Matrix),
+	    io:format("Flytta skott~n"),
+	    {Bool, Type} = grid:check_elem(Y-1,X,Matrix),
+	    if Bool == true ->
+		    NewMatrix = grid:move_elem_up(1,Y,X,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,shot,SPID},
 		    checker(NewMatrix,L);
 	       true -> case Type of
 			   2 ->
-			       meteor;
+			       io:format("meteor");
 			   3 -> 
 			       ship
 		       end
 	    end;
 	
 	{meteor,{X,Y},MPID,1} ->
-	    {Bool,Type} = grid:check_elem (X,Y+1,Matrix),
-	    if Bool ->
-		    NewMatrix = grid:change_elem(2,X,Y,Matrix),
+	    io:format("Ny meteor"),
+	    {Bool,Type} = grid:check_elem (Y+1,X,Matrix),
+	    if Bool == true ->
+		    NewMatrix = grid:change_elem(2,Y,X,Matrix),
 		    U = lists:append(L,[{2,MPID}]),
 		    {boxarn,hoppsansa@ubuntu} ! {add,meteor,{MPID,X}},
 		    checker(NewMatrix,U);
 	       true -> case Type of
 			   1 ->
-			       skott;
+			       io:format("skott");
 			   3 -> 
 			       ship
 		       end
 	    end;
 	
 	{shot,{X,Y},SPID,1} ->
-	    {Bool,Type} = grid:check_elem(X,Y-1,Matrix),
-	    if Bool ->
-		    NewMatrix = grid:change_elem(1, X, Y, Matrix),
+	    io:format("Nytt skott"),
+	    {Bool,Type} = grid:check_elem(Y-1,X,Matrix),
+	    if Bool == true ->
+		    NewMatrix = grid:change_elem(1,Y,X,Matrix),
 		    U = lists:append(L,[{1,SPID}]),
 		    {boxarn,hoppsansa@ubuntu} ! {add,shot,{SPID,X}},
 		    checker(NewMatrix,U);
 	       true -> case Type of
 			   2 -> 
-			       meteor;
+			       io:format("meteor");
 			   3 ->
 			       ship
 		       end
@@ -184,7 +193,7 @@ meteorCreator(CheckerStart,X) ->
 shotCreator(CheckerStart,X) ->
 
     receive
-	{new} ->
+	{new,X} ->
 	    ShotPID = spawn_link(kon,spawnshot,[CheckerStart]),
 	    CheckerStart ! {shot,{X,10},ShotPID,1}
     end.
@@ -194,11 +203,11 @@ counter(Checker) ->
     Checker ! {counter},
     counter(Checker).
 
-spawnshot(Checker) ->
+spawnShot(Checker) ->
     receive
 	{move} ->
 	    Checker ! {shot,{1,7},self()}, %% SKA VARA X;Y!!!!
-	    spawnshot(Checker)
+	    spawnShot(Checker)
 	end.
 
 
@@ -215,4 +224,3 @@ rand() ->
     Rand = random:seed(2,5,8),
     {X,_Y,_Z} = Rand,
     io:format("~p~n",[X]).
-
