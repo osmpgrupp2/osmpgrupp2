@@ -22,6 +22,9 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	private static int gameHeight = 600;
 	private static int gameWidth = 1000;
 	private GameBoard gameBoard = new GameBoard(gameHeight, gameWidth);
+	
+	private static int gridX;
+	private static int gridY;
 
 	private static Image off;
 	private static Graphics d;
@@ -107,20 +110,20 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				if(type.equals(new OtpErlangAtom("ship"))){
 					OtpErlangAtom direction = (OtpErlangAtom) arg;
 					if(direction.equals(new OtpErlangAtom("left"))){
-						gameBoard.moveSpaceShip(-10);
+						gameBoard.moveSpaceShip(-(gameWidth / 10));
 					}
 					else{ //direction == right
-						gameBoard.moveSpaceShip(10);
+						gameBoard.moveSpaceShip(gameWidth /10);
 					}
 				}
 				else if(type.equals(new OtpErlangAtom("meteor"))){ 
 					
-					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), 10); // VA SKA DET VARA HÄR?
+					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), (gameHeight / 10)); // VA SKA DET VARA HÄR?
 					
 					//gameBoard.moveMeteor(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), -10);
 				}
 				else{ //type == shot
-					gameBoard.moveShot(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), 10);
+					gameBoard.moveShot(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), gameHeight / 10);
 				}
 			}
 			repaint();
