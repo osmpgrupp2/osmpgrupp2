@@ -132,14 +132,11 @@ public class GameBoard {
 		Iterator<GameObject> GameObjectIterator = GameObjectList.iterator();
 		GameObject currentGameObject;
 
-		while(GameObjectIterator.hasNext()){
+		for(int i = 0; i < GameObjectList.size(); i++){
 			currentGameObject = GameObjectIterator.next();
 			if(currentGameObject.getIdentifier().equals(identifier))
-				return currentGameObject; //object found
-			else
-				currentGameObject = GameObjectIterator.next();
+				return currentGameObject; //object found				
 		}
-
 		return null; //object not found
 	}
 }
