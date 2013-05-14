@@ -207,6 +207,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			sends = new OtpErlangObject[3];	
 
 			sends[0] = new OtpErlangAtom("left") ;
+			System.out.print("left" + gameBoard.getSpaceShipX()/100);
 			sends[1] = new OtpErlangInt((gameBoard.getSpaceShipX()/100));
 			sends[2] = new OtpErlangInt((gameBoard.getSpaceShipY()/100));
 
@@ -220,6 +221,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			sends = new OtpErlangObject[3];	
 
 			sends[0] = new OtpErlangAtom("right") ;
+			System.out.println("right" + gameBoard.getSpaceShipX()/100);	
 			sends[1] = new OtpErlangInt((gameBoard.getSpaceShipX()/100));
 			sends[2] = new OtpErlangInt((gameBoard.getSpaceShipY()/100));
 

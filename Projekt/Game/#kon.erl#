@@ -71,7 +71,7 @@ start() ->
 checkerStart(N) ->
     Matrix = grid:matrix(N),
     L = [],
-    NewMatrix = grid:change_elem(3,5,10,Matrix),
+    NewMatrix = grid:change_elem(3,10,5,Matrix),
     checker(NewMatrix,L).
     
     
