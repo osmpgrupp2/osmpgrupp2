@@ -48,7 +48,7 @@ res(Checker, ShotCreator) ->
 	{space,X,_Y} ->
 	    io:format("space ~p ~n",[X]),
 	    
-	    ShotCreator ! {new},
+	    ShotCreator ! {new,{X}},
 		res(Checker, ShotCreator)		
     end.
 
@@ -71,7 +71,7 @@ start() ->
 checkerStart(N) ->
     Matrix = grid:matrix(N),
     L = [],
-    NewMatrix = grid:change_elem(3,5,10,Matrix),
+    NewMatrix = grid:change_elem(3,10,5,Matrix),
     checker(NewMatrix,L).
     
     
@@ -123,7 +123,7 @@ checker(Matrix,L) ->
 	    io:format("Flytta Meteor~n"),
 	    {Bool, Type} = grid:check_elem((Y+1),X,Matrix),
 			      
-	    io:format("~p ~p ~n",[Matrix,Bool]),
+	    io:format("~p ~n",[Matrix]),
 	    if Bool == true ->
 		    NewMatrix = grid:move_elem_down(2,Y,X,Matrix),
 		    U = lists:keyreplace(MPID,2,L,{2,MPID,{X,(Y+1)}}),
@@ -153,12 +153,14 @@ checker(Matrix,L) ->
 	    {Bool, Type} = grid:check_elem(Y-1,X,Matrix),
 	    if Bool == true ->
 		    NewMatrix = grid:move_elem_up(1,Y,X,Matrix),
-		    %Uppdatera listan!!!
+		    U = lists:keyreplace(SPID,2,L,{1,SPID,{X,(Y-1)}}),
+		    io:format("~p",[U]),
 		    {boxarn,hoppsansa@ubuntu} ! {move,shot,SPID},
-		    checker(NewMatrix,L);
+		    checker(NewMatrix,U);
 	       true -> case Type of
 			   1 ->
-			       io:format("Gamalt skott,krock med ett skott");
+			       io:format("Gamalt skott,krock med ett skott"),
+			   checker(Matrix,L);
 			   2 ->
 			       io:format("Gamalt skott,krock med ett meteor~n"), 
 			       checker(Matrix,L);
@@ -178,9 +180,8 @@ checker(Matrix,L) ->
 	    if Bool == true ->
 		    NewMatrix = grid:change_elem(2,1,X,Matrix),
 		    U = lists:append(L,[{2,MPID,{X,Y}}]),
-		    io:format("~p",[U]),
-		    P = (X * 100),
-		    {boxarn,hoppsansa@ubuntu} ! {add,meteor,{MPID,P}},
+		    
+		    {boxarn,hoppsansa@ubuntu} ! {add,meteor,{MPID,X}},
 		    checker(NewMatrix,U);
 	       true -> case Type of
 			   1 ->
@@ -194,7 +195,7 @@ checker(Matrix,L) ->
 	    end;
 	
 	{shot,{X,Y},SPID,1} ->
-	    io:format("Nytt skott"),
+	    io:format("Nytt skott, Checker processen: ~p SPID : ~p  ",[self(), SPID]),
 	    {Bool,Type} = grid:check_elem(9,X,Matrix),
 	    if Bool == true ->
 		    NewMatrix = grid:change_elem(1,9,X,Matrix),
@@ -229,13 +230,14 @@ meteorCreator(CheckerStart,X) ->
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
     meteorCreator(CheckerStart,O).
 
-shotCreator(CheckerStart,X) ->
+shotCreator(CheckerStart,_X) ->
     io:format("shotcreator  ~n",[]),
     receive
-	{new} ->
-	    io:format("shotcreator ~p~n", [X]),
-	    ShotPID = spawn_link(kon,spawnshot,[CheckerStart]),
-	    CheckerStart ! {shot,{X,9},ShotPID,1}
+	{new,{Pos}} ->
+	    io:format("receive shotcreator ~p~n", [Pos]),
+	    ShotPID = spawn_link(kon,spawnShot,[CheckerStart]),
+	    CheckerStart ! {shot,{Pos,9},ShotPID,1},
+	    shotCreator(CheckerStart,882)
     end.
 
 counter(Checker) ->
