@@ -81,9 +81,9 @@ checker(Matrix,L) ->
     receive
 	{ship,{X,_Y},left} ->
 	    io:format("Flytta skepp vänster ~n"),
-	    {Bool, Type} = grid:check_elem(10,X-1,Matrix),
+	    {Bool, Type} = grid:check_elem(10,X,Matrix),
 	    if Bool == true ->
-		    NewMatrix = grid:move_elem_l(3,10,X,Matrix),
+		    NewMatrix = grid:move_elem_l(3,10,X+1,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,ship,left},
 		    checker(NewMatrix,L);
 	       true ->
@@ -103,9 +103,9 @@ checker(Matrix,L) ->
 
 	{ship,{X,_Y},right} ->
 	    io:format("Flytta skepp höger"),
-	    {Bool, Type} = grid:check_elem(10,X+1,Matrix),
+	    {Bool, Type} = grid:check_elem(10,X,Matrix),
 	    if Bool == true ->
-		    NewMatrix = grid:move_elem_r(3,10,X,Matrix),
+		    NewMatrix = grid:move_elem_r(3,10,X-1,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,ship,right},
 		    checker(NewMatrix,L);
 	       true ->
@@ -129,17 +129,26 @@ checker(Matrix,L) ->
 			      
 	    io:format("~p ~n",[Matrix]),
 	    if Bool == true ->
-		    NewMatrix = grid:move_elem_down(2,Y,X,Matrix),
-		    U = lists:keyreplace(MPID,2,L,{2,MPID,{X,(Y+1)}}),
-		    {boxarn,hoppsansa@ubuntu} ! {move,meteor,MPID},
-		    checker(NewMatrix,U);	   
+		    P = (lists:keymember(MPID,2,L)),
+		    if  P == true ->
+			    NewMatrix = grid:move_elem_down(2,Y,X,Matrix),
+			    U = lists:keyreplace(MPID,2,L,{2,MPID,{X,(Y+1)}}),
+			    {boxarn,hoppsansa@ubuntu} ! {move,meteor,MPID},
+			    checker(NewMatrix,U);	  
+				true ->
+					  checker(Matrix,L)
+			    
+		       end;
 	       true ->
 		    case Type of 
 			1 ->
 			    io:format("Gammal meteor, krock med ett skott"),
+			    {_T, SPID,{NewX,NewY}} = lists:keyfind({X,Y+1},3,L),
+			       exit(MPID,normal),
+			       exit(SPID,normal),
+
 			    NMatrix = grid:change_elem(0,Y,X,Matrix),     %Tar bort meteoren ur matrixen
-			    {_T, SPID,{X,Y}} = lists:keyfind({X,Y+1},3,L),
-			    NewMatrix = grid:change_elem(0,Y,X,NMatrix),   %Tar bort skottet ur matrixen
+			    NewMatrix = grid:change_elem(0,NewY,NewX,NMatrix),   %Tar bort skottet ur matrixen
 			    O = lists:keydelete(MPID,2,L),                %Tar bort meteoren ur listan
  			    
 			    U = lists:keydelete(SPID,2,O),                %Tar bort skottet ur listan
@@ -147,9 +156,6 @@ checker(Matrix,L) ->
 			    {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},
 			    {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
 			    % {boxarn,hoppsansa@ubuntu} ! {score},
-			    
-			    exit(MPID,normal),
-			    exit(SPID,normal),
 			    
 			    checker(NewMatrix,U);
 			    
@@ -176,11 +182,16 @@ checker(Matrix,L) ->
 	    io:format("Flytta skott~n"),
 	    {Bool, Type} = grid:check_elem(Y-1,X,Matrix),
 	    if Bool == true ->
-		    NewMatrix = grid:move_elem_up(1,Y,X,Matrix),
-		    U = lists:keyreplace(SPID,2,L,{1,SPID,{X,(Y-1)}}),
-		    io:format("~p",[U]),
-		    {boxarn,hoppsansa@ubuntu} ! {move,shot,SPID},
-		    checker(NewMatrix,U);
+		    P = (lists:keymember(SPID,2,L)),
+		    if  P == true ->
+			    NewMatrix = grid:move_elem_up(1,Y,X,Matrix),
+			    U = lists:keyreplace(SPID,2,L,{1,SPID,{X,(Y-1)}}),
+			    io:format("~p",[U]),
+			    {boxarn,hoppsansa@ubuntu} ! {move,shot,SPID},
+			    checker(NewMatrix,U);
+			true ->
+			    checker(Matrix,L)
+			end;
 	       true -> case Type of
 			   1 ->
 			       io:format("Gamalt skott,krock med ett skott"),
@@ -189,9 +200,13 @@ checker(Matrix,L) ->
 
 			   2 ->
 			       io:format("Gamalt skott,krock med en meteor~n"), 
+			       {_T, MPID,{NewX,NewY}} = lists:keyfind({X,Y-1},3,L),
+			       exit(MPID,normal),
+			       exit(SPID,normal),
+
 			       NMatrix = grid:change_elem(0,Y,X,Matrix),     %Tar bort skottet ur matrixen
-			       {_T, MPID,{X,Y}} = lists:keyfind({X,Y-1},3,L),
-			       NewMatrix = grid:change_elem(0,Y,X,NMatrix),   %Tar bort meteoren ur matrixen
+			       
+			       NewMatrix = grid:change_elem(0,NewY,NewX,NMatrix),   %Tar bort meteoren ur matrixen
 			       O = lists:keydelete(MPID,2,L),                %Tar bort meteoren ur listan
 			       
 			       U = lists:keydelete(SPID,2,O),                %Tar bort skottet ur listan
@@ -199,9 +214,8 @@ checker(Matrix,L) ->
 			       {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},  % meddelar java
 			       {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
 						% {boxarn,hoppsansa@ubuntu} ! {score},
-			    
-			       exit(MPID,normal),
-			       exit(SPID,normal),               %avslutar processerna.
+			       
+			       
 			       checker(NewMatrix, U);
 			   3 -> 
 			       io:format("Gamalt skott,krock med ett skepp~n");
@@ -223,8 +237,8 @@ checker(Matrix,L) ->
 	    if Bool == true ->
 		    NewMatrix = grid:change_elem(2,1,X,Matrix),
 		    U = lists:append(L,[{2,MPID,{X,Y}}]),
-		    
-		    {boxarn,hoppsansa@ubuntu} ! {add,meteor,{MPID,X}},
+		    Pos = X * 100,
+		    {boxarn,hoppsansa@ubuntu} ! {add,meteor,{MPID,Pos}},
 		    checker(NewMatrix,U);
 	       true -> case Type of
 			   1 ->
@@ -251,7 +265,8 @@ checker(Matrix,L) ->
 	    if Bool == true ->
 		    NewMatrix = grid:change_elem(1,9,X,Matrix),
 		    U = lists:append(L,[{1,SPID,{X,Y}}]),
-		    {boxarn,hoppsansa@ubuntu} ! {add,shot,{SPID,X}},
+		    Pos = X * 100,
+		    {boxarn,hoppsansa@ubuntu} ! {add,shot,{SPID,Pos}},
 		    checker(NewMatrix,U);
 	       true -> case Type of
 			   1 ->

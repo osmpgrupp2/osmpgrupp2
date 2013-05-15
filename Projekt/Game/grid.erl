@@ -71,7 +71,7 @@ check_elem(Row, Column, Matrix) ->
 		{false,2};
 	   S == {3} ->
 		{false,3};
-	   true -> {false,3} %% SKA VARA EN FYRA!
+	   true -> {false,4} %% SKA VARA EN FYRA!
 	end;
    true ->
 	{false,boundry}

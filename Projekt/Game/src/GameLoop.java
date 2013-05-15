@@ -25,6 +25,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	
 	private static int gridX;
 	private static int gridY;
+	private static int spaceshipX = 5;
 
 	private static Image off;
 	private static Graphics d;
@@ -111,21 +112,21 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				if(type.equals(new OtpErlangAtom("ship"))){
 					OtpErlangAtom direction = (OtpErlangAtom) arg;
 					if(direction.equals(new OtpErlangAtom("left"))){
-						gameBoard.moveSpaceShip(-1);
+						gameBoard.moveSpaceShip(-(gameWidth/10));
 					}
 					else{ //direction == right
-						gameBoard.moveSpaceShip(1);
+						gameBoard.moveSpaceShip((gameWidth/10));
 					}
 				}
 				else if(type.equals(new OtpErlangAtom("meteor"))){ 
 					
-					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), 1); // VA SKA DET VARA HÄR?
+					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), (gameHeight/10)); // VA SKA DET VARA HÄR?
 					
 					//gameBoard.moveMeteor(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), -10);
 				}
 				else{ //type == shot
 					
-					gameBoard.moveShot(((OtpErlangPid)arg).toString(), 1);
+					gameBoard.moveShot(((OtpErlangPid)arg).toString(), -(gameHeight/10)); // ska det vara -1 här?
 					
 					//gameBoard.moveShot(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), gameHeight / 10);
 				}
@@ -207,13 +208,23 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		OtpErlangTuple tuup;
 		switch( keyCode ) { 
 		case KeyEvent.VK_LEFT:
+			spaceshipX --;
+			
 			sends = new OtpErlangObject[3];	
 
+	
 			sends[0] = new OtpErlangAtom("left") ;
-			System.out.print("left" + gameBoard.getSpaceShipX()/100);
-			sends[1] = new OtpErlangInt((gameBoard.getSpaceShipX()/100));
+			System.out.print("left" + spaceshipX);
+			sends[1] = new OtpErlangInt(spaceshipX);
+			sends[2] = new OtpErlangInt(0);
+			/*sends[1] = new OtpErlangInt((gameBoard.getSpaceShipX()/100));
 			sends[2] = new OtpErlangInt((gameBoard.getSpaceShipY()/100));
-
+*/
+			if(spaceshipX == 0){
+				spaceshipX = 1;
+			}
+			
+			
 			tuup = new OtpErlangTuple(sends);
 
 			MyBox.send(erlangpid, tuup);
@@ -221,13 +232,22 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			//left = true;
 			break;
 		case KeyEvent.VK_RIGHT :
+			spaceshipX ++;
 			sends = new OtpErlangObject[3];	
 
 			sends[0] = new OtpErlangAtom("right") ;
-			System.out.println("right" + gameBoard.getSpaceShipX()/100);	
+			System.out.println("right" + spaceshipX);	
+			sends[1] = new OtpErlangInt(spaceshipX);
+			sends[2] = new OtpErlangInt(0);
+			
+			if(spaceshipX == 11){
+				spaceshipX = 10;
+			}
+			
+			/*
 			sends[1] = new OtpErlangInt((gameBoard.getSpaceShipX()/100));
 			sends[2] = new OtpErlangInt((gameBoard.getSpaceShipY()/100));
-
+*/
 
 			tuup = new OtpErlangTuple(sends);
 
@@ -240,7 +260,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			sends = new OtpErlangObject[3];	
 
 			sends[0] = new OtpErlangAtom("space") ;
-			sends[1] = new OtpErlangInt((gameBoard.getSpaceShipX()/100));
+			sends[1] = new OtpErlangInt((spaceshipX));
 			sends[2] = new OtpErlangInt((gameBoard.getSpaceShipY()/100));
 
 
