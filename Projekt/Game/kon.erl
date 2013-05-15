@@ -59,7 +59,7 @@ start() ->
     io:format("~p~n",[Text]),
     Nod = erlang:nodes(this),
     io:format("~p~n",[Nod]),
-    {boxarn,hoppsansa@ubuntu} ! {self(),1000,1000},
+    {boxarn,hoppsansa@ubuntu} ! {self(),500,500},
     CheckerStart = spawn_link(kon,checkerStart,[10]),
     _Counter = spawn_link(kon,counter,[CheckerStart]),
     ShotCreator = spawn_link(kon,shotCreator,[CheckerStart,4]), %DETTA SKA VARA SKEPPETS X KORDINAT!!!!!
@@ -91,7 +91,9 @@ checker(Matrix,L) ->
 			1 ->
 			    io:format("krock med ett skott");
 			2 ->
-			    io:format("krock med ett meteor~n"), 
+			    io:format("krock med ett meteor~n"),
+			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
+			    gameOver(L),
 			    checker(Matrix,L);
 			3 -> 
 			    io:format("krock med ett skepp~n")
@@ -112,6 +114,8 @@ checker(Matrix,L) ->
 			    io:format("krock med ett skott");
 			2 ->
 			    io:format("krock med ett meteor~n"), 
+			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
+			    gameOver(L),
 			    checker(Matrix,L);
 			3 -> 
 			    io:format("krock med ett skepp~n")
@@ -132,16 +136,36 @@ checker(Matrix,L) ->
 	       true ->
 		    case Type of 
 			1 ->
-			    io:format("Gammal meteor, krock med ett skott");
+			    io:format("Gammal meteor, krock med ett skott"),
+			    NMatrix = grid:change_elem(0,Y,X,Matrix),     %Tar bort meteoren ur matrixen
+			    {_T, SPID,{X,Y}} = lists:keyfind({X,Y+1},3,L),
+			    NewMatrix = grid:change_elem(0,Y,X,NMatrix),   %Tar bort skottet ur matrixen
+			    O = lists:keydelete(MPID,2,L),                %Tar bort meteoren ur listan
+ 			    
+			    U = lists:keydelete(SPID,2,O),                %Tar bort skottet ur listan
+			    
+			    {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},
+			    {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
+			    % {boxarn,hoppsansa@ubuntu} ! {score},
+			    
+			    exit(MPID,normal),
+			    exit(SPID,normal),
+			    
+			    checker(NewMatrix,U);
+			    
 			2 ->
-			    io:format("Gammal meteor, krock med en meteor~n"), 
+			    io:format("Gammal meteor, krock med en meteor~n"),
 			    checker(Matrix,L);
 			3 -> 
-			    io:format("Gammal meteor, krock med ett skepp~n");
+			    io:format("Gammal meteor, krock med ett skepp~n"),
+			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
+			    gameOver(L),
+			    checker(Matrix,L);
 			boundry ->
 			    U = lists:keydelete(MPID,2,L),
-			    {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},
 			    NewMatrix = grid:change_elem(0,Y,X,Matrix),
+			    {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},
+			    
 			    exit(MPID,normal),
 			    checker(NewMatrix,U)
 			    
@@ -160,18 +184,37 @@ checker(Matrix,L) ->
 	       true -> case Type of
 			   1 ->
 			       io:format("Gamalt skott,krock med ett skott"),
-			   checker(Matrix,L);
+			       			    
+			    checker(Matrix,L);
+
 			   2 ->
-			       io:format("Gamalt skott,krock med ett meteor~n"), 
-			       checker(Matrix,L);
+			       io:format("Gamalt skott,krock med en meteor~n"), 
+			       NMatrix = grid:change_elem(0,Y,X,Matrix),     %Tar bort skottet ur matrixen
+			       {_T, MPID,{X,Y}} = lists:keyfind({X,Y-1},3,L),
+			       NewMatrix = grid:change_elem(0,Y,X,NMatrix),   %Tar bort meteoren ur matrixen
+			       O = lists:keydelete(MPID,2,L),                %Tar bort meteoren ur listan
+			       
+			       U = lists:keydelete(SPID,2,O),                %Tar bort skottet ur listan
+			       
+			       {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},  % meddelar java
+			       {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
+						% {boxarn,hoppsansa@ubuntu} ! {score},
+			    
+			       exit(MPID,normal),
+			       exit(SPID,normal),               %avslutar processerna.
+			       checker(NewMatrix, U);
 			   3 -> 
 			       io:format("Gamalt skott,krock med ett skepp~n");
+
 			   boundry ->
 			       U = lists:keydelete(SPID,2,L),
-			       {boxarn,hoppsansa@ubuntu} ! {remove,meteor,SPID},
-			       exit(SPID,kill),
-			       checker(Matrix,U)
-		       end
+			       NewMatrix = grid:change_elem(0,Y,X,Matrix),
+			       {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
+			       exit(SPID,normal),
+			       checker(NewMatrix,U)
+
+			      
+			  end
 	    end;
 	
 	{meteor,{X,Y},MPID,1} ->
@@ -185,9 +228,17 @@ checker(Matrix,L) ->
 		    checker(NewMatrix,U);
 	       true -> case Type of
 			   1 ->
-			       io:format("Ny meteor, krock med ett skott");
+			       io:format("Ny meteor, krock med ett skott"),
+			       {_T, SPID,{X,Y}} = lists:keyfind({X,1},3,L),
+			       U = lists:keydelete(SPID,2,L),
+			       NewMatrix = grid:change_elem(0,Y,X,Matrix),
+			       {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
+			       exit(MPID,normal),
+			       exit(SPID,normal),
+			       checker(NewMatrix,U);
 			   2 ->
-			       io:format("Ny meteor, krock med en meteor~n"), 
+			       io:format("Ny meteor, krock med en meteor~n"),
+			       exit(MPID,normal),
 			       checker(Matrix,L);
 			   3 -> 
 			       io:format("Ny meteor, krock med ett skepp~n")
@@ -204,10 +255,22 @@ checker(Matrix,L) ->
 		    checker(NewMatrix,U);
 	       true -> case Type of
 			   1 ->
-			       io:format("Nytt skott, krock med ett skott");
-			   2 ->
-			       io:format("Nytt skott, krock med en meteor~n"), 
+			       io:format("Nytt skott, krock med ett skott"),
+			       exit(SPID,normal),
 			       checker(Matrix,L);
+			   2 ->
+			       io:format("Nytt skott, krock med en meteor~n"),
+			       {_T, MPID,{X,Y}} = lists:keyfind({X,9},3,L),
+			       NewMatrix = grid:change_elem(0,Y,X,Matrix),   %Tar bort meteoren ur matrixen
+			       U = lists:keydelete(MPID,2,L),                %Tar bort meteoren ur listan
+			      
+			       
+			       {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},  % meddelar java
+			      	% {boxarn,hoppsansa@ubuntu} ! {score},
+			    
+			       exit(MPID,normal),
+			       exit(SPID,normal),               %avslutar processerna.
+			       checker(NewMatrix, U); 
 			   3 -> 
 			       io:format("Nytt skott, krock med ett skepp~n")
 		       end
@@ -261,4 +324,7 @@ spawnMeteor(Checker) ->
 		
 	end.
     
+gameOver(Listan) ->
+    io:format("GAMEOVER").
+    %lists:keymap(fun(N) ->  exit(N,normal) end,2,Listan).
 
