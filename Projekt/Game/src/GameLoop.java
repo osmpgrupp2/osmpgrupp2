@@ -187,7 +187,9 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		d.clearRect(0, 0, gameWidth, gameHeight);
 		if(gameOver){
 			d.drawImage(gameover, 0, 0, gameWidth, gameHeight, this);
-			
+			d.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+			d.setColor(new Color(255,0,0));
+			d.drawString("" + gameBoard.getScore(), gameWidth/2, gameHeight - 50);
 		}
 		else{
 
