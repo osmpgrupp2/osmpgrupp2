@@ -59,7 +59,7 @@ start() ->
     io:format("~p~n",[Text]),
     Nod = erlang:nodes(this),
     io:format("~p~n",[Nod]),
-    {boxarn,hoppsansa@ubuntu} ! {self(),500,500},
+    {boxarn,hoppsansa@ubuntu} ! {self(),1100,650},
     CheckerStart = spawn_link(kon,checkerStart,[10]),
     _Counter = spawn_link(kon,counter,[CheckerStart]),
     ShotCreator = spawn_link(kon,shotCreator,[CheckerStart,4]), %DETTA SKA VARA SKEPPETS X KORDINAT!!!!!
@@ -237,7 +237,7 @@ checker(Matrix,L) ->
 	    if Bool == true ->
 		    NewMatrix = grid:change_elem(2,1,X,Matrix),
 		    U = lists:append(L,[{2,MPID,{X,Y}}]),
-		    Pos = X * 100,
+		    Pos = X * 110,
 		    {boxarn,hoppsansa@ubuntu} ! {add,meteor,{MPID,Pos}},
 		    checker(NewMatrix,U);
 	       true -> case Type of
@@ -265,7 +265,7 @@ checker(Matrix,L) ->
 	    if Bool == true ->
 		    NewMatrix = grid:change_elem(1,9,X,Matrix),
 		    U = lists:append(L,[{1,SPID,{X,Y}}]),
-		    Pos = X * 100,
+		    Pos = X * 110,
 		    {boxarn,hoppsansa@ubuntu} ! {add,shot,{SPID,Pos}},
 		    checker(NewMatrix,U);
 	       true -> case Type of
@@ -302,7 +302,7 @@ checker(Matrix,L) ->
 
 
 meteorCreator(CheckerStart,X) ->
-    timer:sleep(4000),    
+    timer:sleep(3000),    
     O = ((X rem 10) +1), 
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
@@ -319,7 +319,7 @@ shotCreator(CheckerStart,_X) ->
     end.
 
 counter(Checker) ->
-    timer:sleep(3000),
+    timer:sleep(2500),
     Checker ! {counter},
     counter(Checker).
 

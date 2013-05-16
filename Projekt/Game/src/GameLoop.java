@@ -20,8 +20,8 @@ import com.ericsson.otp.erlang.*;
 public class GameLoop extends Applet implements Runnable, KeyListener{
 
 	private static int gameHeight = 600;
-	private static int gameWidth = 1000;
-	private GameBoard gameBoard = new GameBoard(gameHeight, gameWidth);
+	public static int gameWidth = 1000;
+	private GameBoard gameBoard;
 	
 	private static int gridX;
 	private static int gridY;
@@ -158,12 +158,12 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		OtpErlangLong height = (OtpErlangLong) tuple.elementAt(2);
 		
 		try {
-			gameWidth = width.intValue()+100;
-			gameHeight = height.intValue() +100;
+			gameWidth = width.intValue();
+			gameHeight = height.intValue() ;
 		} catch (OtpErlangRangeException e) {
 			e.printStackTrace();
 		}
-
+		gameBoard = new GameBoard(gameHeight, gameWidth);
 		setSize(gameWidth,gameHeight);
 		Thread th = new Thread(this);
 		th.start();
