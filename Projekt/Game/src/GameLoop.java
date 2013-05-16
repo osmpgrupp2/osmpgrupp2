@@ -133,6 +133,9 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	 * @see java.applet.Applet#init()
 	 */
 	public void init() {
+		PlaySound ps = new PlaySound();
+		ps.run();
+		
 		try{
 			MyNode = new OtpNode("hoppsansa", "hojjsa");
 			MyBox = MyNode.createMbox("boxarn");
