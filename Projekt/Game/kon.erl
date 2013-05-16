@@ -308,7 +308,7 @@ checker(Matrix,L) ->
 
 
 meteorCreator(CheckerStart,X) ->
-    timer:sleep(3000),    
+    timer:sleep(2000),    
     O = ((X rem 10) +1), 
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
