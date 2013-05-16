@@ -20,7 +20,8 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	private static int gameHeight = 600;
 	public static int gameWidth = 1000;
 	private GameBoard gameBoard;
-	private static int spaceshipX = 5;
+
+	private static int spaceshipX = 26;
 	private boolean gameOver = false;
 
 	private static Image off;
@@ -113,13 +114,14 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				if(type.equals(new OtpErlangAtom("ship"))){
 					OtpErlangAtom direction = (OtpErlangAtom) arg;
 					if(direction.equals(new OtpErlangAtom("left"))){
-						gameBoard.moveSpaceShip(-(gameWidth/10));
+						gameBoard.moveSpaceShip(-(20));
 					}
 					else{ //direction == right
-						gameBoard.moveSpaceShip(gameWidth/10); 
+						gameBoard.moveSpaceShip(20); 
 					}
 				}
 				else if(type.equals(new OtpErlangAtom("meteor"))){ 
+<<<<<<< HEAD
 
 					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), (gameHeight/10)); // VA SKA DET VARA HÄR?
 
@@ -129,6 +131,17 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 
 					gameBoard.moveShot(((OtpErlangPid)arg).toString(), -(gameHeight/10)); // 
 
+=======
+					
+					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), (gameHeight/51)); // VA SKA DET VARA HÄR?
+					
+					//gameBoard.moveMeteor(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), -10);
+				}
+				else{ //type == shot
+					
+					gameBoard.moveShot(((OtpErlangPid)arg).toString(), -(gameHeight/51)); // 
+					
+>>>>>>> 3d5ed90fc800d9d942d37ae5d10da252452c73a8
 					//gameBoard.moveShot(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), gameHeight / 10);
 				}
 			}
@@ -269,9 +282,15 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			System.out.println("right" + spaceshipX);	
 			sends[1] = new OtpErlangInt(spaceshipX);
 			sends[2] = new OtpErlangInt(0);
+<<<<<<< HEAD
 
 			if(spaceshipX == 11){
 				spaceshipX = 10;
+=======
+			
+			if(spaceshipX == 52){
+				spaceshipX = 51;
+>>>>>>> 3d5ed90fc800d9d942d37ae5d10da252452c73a8
 			}
 
 			/*

@@ -1,4 +1,4 @@
-# Tex settings
+make # Tex settings
 ERLANG_COMPILER = erlc
 JAVA_GO 	= java
 JAVA_COMPILER   = javac

@@ -62,7 +62,7 @@ start() ->
     L = [],
     {boxarn,hoppsansa@ubuntu} ! {self(),1100,650},
     GameOver = spawn_link(kon,gameOver,[L]),
-    CheckerStart = spawn_link(kon,checkerStart,[10,GameOver]),
+    CheckerStart = spawn_link(kon,checkerStart,[51,GameOver]),%10
     Counter = spawn_link(kon,counter,[CheckerStart]),
     ShotCreator = spawn_link(kon,shotCreator,[CheckerStart]), 
     MeteorCreator = spawn_link(kon,meteorCreator,[CheckerStart,0]), %Detta ska vara en hårdkodad siffra!
@@ -73,7 +73,7 @@ start() ->
 checkerStart(N,GameOver) ->
     Matrix = grid:matrix(N),
     L = [],
-    NewMatrix = grid:change_elem(3,10,5,Matrix),
+    NewMatrix = grid:change_elem(3,51,26,Matrix), %3,10,5
     checker(NewMatrix,L,GameOver).
     
     
@@ -83,9 +83,9 @@ checker(Matrix,L,GameOver) ->
     receive
 	{ship,{X,_Y},left} ->
 	    io:format("Flytta skepp vänster ~n"),
-	    {Bool, Type} = grid:check_elem(10,X,Matrix),
+	    {Bool, Type} = grid:check_elem(51,X,Matrix),
 	    if Bool == true ->
-		    NewMatrix = grid:move_elem_l(3,10,X+1,Matrix),
+		    NewMatrix = grid:move_elem_l(3,51,X+1,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,ship,left},
 		    checker(NewMatrix,L,GameOver);
 	       true ->
@@ -109,9 +109,9 @@ checker(Matrix,L,GameOver) ->
 
 	{ship,{X,_Y},right} ->
 	    io:format("Flytta skepp höger"),
-	    {Bool, Type} = grid:check_elem(10,X,Matrix),
+	    {Bool, Type} = grid:check_elem(51,X,Matrix),
 	    if Bool == true ->
-		    NewMatrix = grid:move_elem_r(3,10,X-1,Matrix),
+		    NewMatrix = grid:move_elem_r(3,51,X-1,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,ship,right},
 		    checker(NewMatrix,L,GameOver);
 	       true ->
@@ -136,8 +136,6 @@ checker(Matrix,L,GameOver) ->
 	{meteor,{X,Y},MPID} ->
 	    io:format("Flytta Meteor~n"),
 	    {Bool, Type} = grid:check_elem((Y+1),X,Matrix),
-			      
-	    io:format("~p ~n",[Matrix]),
 	    if Bool == true ->
 		    P = (lists:keymember(MPID,2,L)),
 		    if  P == true ->
@@ -249,7 +247,7 @@ checker(Matrix,L,GameOver) ->
 	    if Bool == true ->
 		    NewMatrix = grid:change_elem(2,1,X,Matrix),
 		    U = lists:append(L,[{2,MPID,{X,Y}}]),
-		    Pos = X * 110,
+		    Pos = X * 20, %*100
 		    {boxarn,hoppsansa@ubuntu} ! {add,meteor,{MPID,Pos}},
 		    checker(NewMatrix,U,GameOver);
 	       true -> case Type of
@@ -273,11 +271,11 @@ checker(Matrix,L,GameOver) ->
 	
 	{shot,{X,Y},SPID,1} ->
 	    io:format("Nytt skott, Checker processen: ~p SPID : ~p  ",[self(), SPID]),
-	    {Bool,Type} = grid:check_elem(9,X,Matrix),
+	    {Bool,Type} = grid:check_elem(50,X,Matrix),
 	    if Bool == true ->
-		    NewMatrix = grid:change_elem(1,9,X,Matrix),
+		    NewMatrix = grid:change_elem(1,50,X,Matrix), %9
 		    U = lists:append(L,[{1,SPID,{X,Y}}]),
-		    Pos = X * 110,
+		    Pos = X * 20, % 100
 		    {boxarn,hoppsansa@ubuntu} ! {add,shot,{SPID,Pos}},
 		    checker(NewMatrix,U,GameOver);
 	       true -> case Type of
@@ -287,7 +285,7 @@ checker(Matrix,L,GameOver) ->
 			       checker(Matrix,L,GameOver);
 			   2 ->
 			       io:format("Nytt skott, krock med en meteor~n"),
-			       {_T, MPID,{X,Y}} = lists:keyfind({X,9},3,L),
+			       {_T, MPID,{X,Y}} = lists:keyfind({X,50},3,L), %9
 			       NewMatrix = grid:change_elem(0,Y,X,Matrix),   %Tar bort meteoren ur matrixen
 			       U = lists:keydelete(MPID,2,L),                %Tar bort meteoren ur listan
 			      
@@ -315,7 +313,7 @@ checker(Matrix,L,GameOver) ->
 
 meteorCreator(CheckerStart,X) ->
     timer:sleep(2000),    
-    O = ((X rem 10) +1), 
+    O = ((X rem 51) +1),   %10 
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
     meteorCreator(CheckerStart,O).
@@ -326,7 +324,7 @@ shotCreator(CheckerStart) ->
 	{new,{Pos}} ->
 	    io:format("receive shotcreator ~p~n", [Pos]),
 	    ShotPID = spawn_link(kon,spawnShot,[CheckerStart]),
-	    CheckerStart ! {shot,{Pos,9},ShotPID,1},
+	    CheckerStart ! {shot,{Pos,50},ShotPID,1}, %9
 	    shotCreator(CheckerStart)
     end.
 

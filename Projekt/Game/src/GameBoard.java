@@ -28,8 +28,12 @@ public class GameBoard {
 	public GameBoard(int heigth, int width){
 		this.heigth = heigth;
 		this.width = width;
+
+		this.spaceShip = new SpaceShip(520, this.heigth - bottomMariginal);
+
 		this.score = 0;
-		this.spaceShip = new SpaceShip(this.width / 2, this.heigth - bottomMariginal);  	
+		  	
+
 	}
  
 	/*
