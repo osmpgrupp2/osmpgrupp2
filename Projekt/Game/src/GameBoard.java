@@ -20,9 +20,9 @@ public class GameBoard {
 	public GameBoard(int heigth, int width){
 		this.heigth = heigth;
 		this.width = width;
-		this.spaceShip = new SpaceShip(this.width, this.heigth - bottomMariginal);  	
+		this.spaceShip = new SpaceShip(this.width / 2, this.heigth - bottomMariginal);  	
 	}
-
+ 
 	/*
 	 * @doc adds a Meteor with identifier identifier and y-position y
 	 */
