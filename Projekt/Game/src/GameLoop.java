@@ -64,17 +64,14 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				e1.printStackTrace();
 			}
 
-			// beslut innehåller: add, remove, move
-
 			OtpErlangTuple tuple = (OtpErlangTuple) object;
-			OtpErlangAtom beslut = (OtpErlangAtom) tuple.elementAt(0);
-			OtpErlangAtom type = (OtpErlangAtom) tuple.elementAt(1);
-			OtpErlangObject arg = (OtpErlangObject) tuple.elementAt(2);
-			
+			OtpErlangAtom beslut = (OtpErlangAtom) tuple.elementAt(0);		//move/add/delete
+			OtpErlangAtom type = (OtpErlangAtom) tuple.elementAt(1);		//ship/meteor/shot
+			OtpErlangObject arg = (OtpErlangObject) tuple.elementAt(2);		//left/right / pid / {pid, pos}
 			
 			if(beslut.equals(new OtpErlangAtom("add"))){
 				OtpErlangTuple hej = (OtpErlangTuple) arg;
-				String pid = ((OtpErlangPid) hej.elementAt(0)).toString();			// Ett försök att rätta till.
+				String pid = ((OtpErlangPid) hej.elementAt(0)).toString();
 				int pos = 0;
 				
 				try {
@@ -82,14 +79,6 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				} catch (OtpErlangRangeException e) {
 					e.printStackTrace();
 				}
-				/*String pid = ((OtpErlangPid) arg).toString();  //Detta blir en tupel med {pid,pos}.
-				int pos = 0;
-				try {
-					pos = ((OtpErlangInt) arg).intValue();
-				} catch (OtpErlangRangeException e) {
-				
-					e.printStackTrace();
-				}*/
 				
 				if(type.equals(new OtpErlangAtom("meteor"))){
 					gameBoard.addMeteor(pid, pos);
