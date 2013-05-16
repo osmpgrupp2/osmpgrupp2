@@ -62,7 +62,7 @@ start() ->
     {boxarn,hoppsansa@ubuntu} ! {self(),1100,650},
     CheckerStart = spawn_link(kon,checkerStart,[10]),
     _Counter = spawn_link(kon,counter,[CheckerStart]),
-    ShotCreator = spawn_link(kon,shotCreator,[CheckerStart,4]), %DETTA SKA VARA SKEPPETS X KORDINAT!!!!!
+    ShotCreator = spawn_link(kon,shotCreator,[CheckerStart]), 
     io:format("shotcreator  ~p ~n",[ShotCreator]),
     _MeteorCreator = spawn_link(kon,meteorCreator,[CheckerStart,0]), %Detta ska vara en hårdkodad siffra!
     res(CheckerStart, ShotCreator).
@@ -96,7 +96,10 @@ checker(Matrix,L) ->
 			    gameOver(L),
 			    checker(Matrix,L);
 			3 -> 
-			    io:format("krock med ett skepp~n")
+			    io:format("krock med ett skepp~n");
+			boundry ->
+			    io:format("Utanför griden, vänster!"),
+			    checker(Matrix,L)
 
 		    end
 	    end;
@@ -118,7 +121,10 @@ checker(Matrix,L) ->
 			    gameOver(L),
 			    checker(Matrix,L);
 			3 -> 
-			    io:format("krock med ett skepp~n")
+			    io:format("krock med ett skepp~n");
+			boundry ->
+			    io:format("Utanför griden,höger!"),
+			    checker(Matrix,L)
 			    
 		    end
 	    end;
@@ -302,20 +308,20 @@ checker(Matrix,L) ->
 
 
 meteorCreator(CheckerStart,X) ->
-    timer:sleep(3000),    
+    timer:sleep(2000),    
     O = ((X rem 10) +1), 
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
     meteorCreator(CheckerStart,O).
 
-shotCreator(CheckerStart,_X) ->
-    io:format("shotcreator  ~n",[]),
+shotCreator(CheckerStart) ->
+
     receive
 	{new,{Pos}} ->
 	    io:format("receive shotcreator ~p~n", [Pos]),
 	    ShotPID = spawn_link(kon,spawnShot,[CheckerStart]),
 	    CheckerStart ! {shot,{Pos,9},ShotPID,1},
-	    shotCreator(CheckerStart,882)
+	    shotCreator(CheckerStart)
     end.
 
 counter(Checker) ->
