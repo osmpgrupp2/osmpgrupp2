@@ -1,5 +1,7 @@
 
 import java.applet.*;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
@@ -10,21 +12,14 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import com.ericsson.otp.erlang.*;
 
-
-
-// meddelanden ska skickas på detta format: {move/add/delete, ship/meteor/shot, left/right eller pid eller {pid, pos}}
-
-
-
-
+/*
+ * @doc runs the java part of the game
+ */
 public class GameLoop extends Applet implements Runnable, KeyListener{
 
 	private static int gameHeight = 600;
 	public static int gameWidth = 1000;
 	private GameBoard gameBoard;
-	
-	private static int gridX;
-	private static int gridY;
 	private static int spaceshipX = 5;
 
 	private static Image off;
@@ -40,12 +35,15 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	private OtpErlangObject object = null;
 
 
+	/*
+	 * @see java.lang.Runnable#run()
+	 */
 	public void run() {
 		try {
-			background = ImageIO.read(new File("space1.jpg"));
+			background = ImageIO.read(new File("spaceinvaders.gif"));//"space1.jpg"));
 			ship = ImageIO.read(new File("vitt.jpg"));
 			shot = ImageIO.read(new File("green.jpg"));
-			meteor = ImageIO.read(new File("meteor.jpg"));
+			meteor = ImageIO.read(new File("pink.jpg"));//"meteor.jpg"));
 		} catch (IOException e) {
 		}
 
@@ -65,11 +63,19 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			}
 
 			OtpErlangTuple tuple = (OtpErlangTuple) object;
-			OtpErlangAtom beslut = (OtpErlangAtom) tuple.elementAt(0);		//move/add/delete
-			OtpErlangAtom type = (OtpErlangAtom) tuple.elementAt(1);		//ship/meteor/shot
-			OtpErlangObject arg = (OtpErlangObject) tuple.elementAt(2);		//left/right / pid / {pid, pos}
+			OtpErlangAtom beslut = (OtpErlangAtom) tuple.elementAt(0);		//move/add/delete/score
+			OtpErlangAtom type = (OtpErlangAtom) tuple.elementAt(1);		//ship/meteor/shot/score
+			OtpErlangObject arg = (OtpErlangObject) tuple.elementAt(2);		//left/right / pid / {pid, pos} / score
 			
-			if(beslut.equals(new OtpErlangAtom("add"))){
+			if(beslut.equals(new OtpErlangAtom("score"))){
+				
+				try {
+					gameBoard.addScore(((OtpErlangLong)arg).intValue());
+				} catch (OtpErlangRangeException e) {
+					e.printStackTrace();
+				}
+			}
+			else if(beslut.equals(new OtpErlangAtom("add"))){
 				OtpErlangTuple hej = (OtpErlangTuple) arg;
 				String pid = ((OtpErlangPid) hej.elementAt(0)).toString();
 				int pos = 0;
@@ -123,6 +129,9 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			repaint();
 		}
 	}
+	/*
+	 * @see java.applet.Applet#init()
+	 */
 	public void init() {
 		try{
 			MyNode = new OtpNode("hoppsansa", "hojjsa");
@@ -169,6 +178,11 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 
 		Iterator<GameObject> GameObjectIterator = gameBoard.getMeteorList().iterator();
 		GameObject currentGameObject;
+		
+		d.setFont(new Font("TimesRoman", Font.PLAIN, 30));
+	    d.setColor(new Color(255,0,0));
+		d.drawString("" + gameBoard.getScore(), 30, 50);
+		
 
 		/*Meteors*/
 		while(GameObjectIterator.hasNext()){
@@ -182,15 +196,27 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			currentGameObject = GameObjectIterator.next();
 			d.drawImage(shot, gameBoard.getGameObjectX(currentGameObject), gameBoard.getGameObjectY(currentGameObject)-20, 20, 20, this);
 		}
+		
+		
+		
 		g.drawImage(off,0,0,this); 
 	}
 
+	/*
+	 * @see java.awt.Container#update(java.awt.Graphics)
+	 */
 	public void update(Graphics g){
 		paint(g);
 	}
 
 
 	@Override
+	/*
+	 * @doc left arrow key moves spaceship left
+	 * 		right arrow key moves spaceship right
+	 * 		space shoots
+	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
+	 */
 	public void keyPressed(KeyEvent e) {
 		int keyCode = e.getKeyCode();
 		OtpErlangObject[] sends;
