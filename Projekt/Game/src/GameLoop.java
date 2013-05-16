@@ -42,10 +42,10 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 
 	public void run() {
 		try {
-			background = ImageIO.read(new File("spaceinvaders.gif"));
+			background = ImageIO.read(new File("space1.jpg"));
 			ship = ImageIO.read(new File("vitt.jpg"));
 			shot = ImageIO.read(new File("green.jpg"));
-			meteor = ImageIO.read(new File("pink.jpg"));
+			meteor = ImageIO.read(new File("meteor.jpg"));
 		} catch (IOException e) {
 		}
 
@@ -115,7 +115,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 						gameBoard.moveSpaceShip(-(gameWidth/10));
 					}
 					else{ //direction == right
-						gameBoard.moveSpaceShip((700)); 
+						gameBoard.moveSpaceShip(gameWidth/10); 
 					}
 				}
 				else if(type.equals(new OtpErlangAtom("meteor"))){ 
@@ -191,7 +191,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		GameObjectIterator = gameBoard.getShotList().iterator();
 		while(GameObjectIterator.hasNext()){
 			currentGameObject = GameObjectIterator.next();
-			d.drawImage(shot, gameBoard.getGameObjectX(currentGameObject), gameBoard.getGameObjectY(currentGameObject), 20, 20, this);
+			d.drawImage(shot, gameBoard.getGameObjectX(currentGameObject), gameBoard.getGameObjectY(currentGameObject)-20, 20, 20, this);
 		}
 		g.drawImage(off,0,0,this); 
 	}
