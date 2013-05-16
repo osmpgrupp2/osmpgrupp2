@@ -40,10 +40,10 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	 */
 	public void run() {
 		try {
-			background = ImageIO.read(new File("spaceinvaders.gif"));//"space1.jpg"));
+			background = ImageIO.read(new File("space1.jpg"));
 			ship = ImageIO.read(new File("vitt.jpg"));
 			shot = ImageIO.read(new File("green.jpg"));
-			meteor = ImageIO.read(new File("pink.jpg"));//"meteor.jpg"));
+			meteor = ImageIO.read(new File("meteor.jpg"));
 		} catch (IOException e) {
 		}
 
