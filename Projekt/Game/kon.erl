@@ -321,7 +321,7 @@ shotCreator(CheckerStart) ->
 	    io:format("receive shotcreator ~p~n", [Pos]),
 	    ShotPID = spawn_link(kon,spawnShot,[CheckerStart]),
 	    CheckerStart ! {shot,{Pos,9},ShotPID,1},
-	    shotCreator(CheckerStart,)
+	    shotCreator(CheckerStart)
     end.
 
 counter(Checker) ->
