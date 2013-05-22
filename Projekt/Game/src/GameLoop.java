@@ -43,6 +43,8 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	 */
 	public void run() {
 		try {
+			PlaySound ps = new PlaySound();
+			ps.run();
 			background = ImageIO.read(new File("space1.jpg"));
 			ship = ImageIO.read(new File("vitt.jpg"));
 			shot = ImageIO.read(new File("green.jpg"));
@@ -140,8 +142,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	 * @see java.applet.Applet#init()
 	 */
 	public void init() {
-		PlaySound ps = new PlaySound();
-		ps.run();
+		
 
 		try{
 			MyNode = new OtpNode("hoppsansa", "hojjsa");
