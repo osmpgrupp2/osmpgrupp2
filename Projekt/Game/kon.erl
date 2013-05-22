@@ -59,25 +59,27 @@ start() ->
     io:format("~p~n",[Text]),
     Nod = erlang:nodes(this),
     io:format("~p~n",[Nod]),
+    L = [],
     {boxarn,hoppsansa@ubuntu} ! {self(),1100,650},
-    CheckerStart = spawn_link(kon,checkerStart,[10]),
-    _Counter = spawn_link(kon,counter,[CheckerStart]),
+    GameOver = spawn_link(kon,gameOver,[L]),
+    CheckerStart = spawn_link(kon,checkerStart,[10,GameOver]),
+    Counter = spawn_link(kon,counter,[CheckerStart]),
     ShotCreator = spawn_link(kon,shotCreator,[CheckerStart]), 
-    io:format("shotcreator  ~p ~n",[ShotCreator]),
-    _MeteorCreator = spawn_link(kon,meteorCreator,[CheckerStart,0]), %Detta ska vara en hårdkodad siffra!
+    MeteorCreator = spawn_link(kon,meteorCreator,[CheckerStart,0]), %Detta ska vara en hårdkodad siffra!
+    GameOver ! {Counter,ShotCreator,MeteorCreator},
     res(CheckerStart, ShotCreator).
 
 
-checkerStart(N) ->
+checkerStart(N,GameOver) ->
     Matrix = grid:matrix(N),
     L = [],
     NewMatrix = grid:change_elem(3,10,5,Matrix),
-    checker(NewMatrix,L).
+    checker(NewMatrix,L,GameOver).
     
     
 
 
-checker(Matrix,L) ->
+checker(Matrix,L,GameOver) ->
     receive
 	{ship,{X,_Y},left} ->
 	    io:format("Flytta skepp vänster ~n"),
@@ -85,7 +87,7 @@ checker(Matrix,L) ->
 	    if Bool == true ->
 		    NewMatrix = grid:move_elem_l(3,10,X+1,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,ship,left},
-		    checker(NewMatrix,L);
+		    checker(NewMatrix,L,GameOver);
 	       true ->
 		    case Type of
 			1 ->
@@ -93,13 +95,14 @@ checker(Matrix,L) ->
 			2 ->
 			    io:format("krock med ett meteor~n"),
 			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
-			    gameOver(L),
-			    checker(Matrix,L);
+			    GameOver ! {self(),L},
+			    exit(self(),normal);
+			    %checker(Matrix,L,GameOver);
 			3 -> 
 			    io:format("krock med ett skepp~n");
 			boundry ->
 			    io:format("Utanför griden, vänster!"),
-			    checker(Matrix,L)
+			    checker(Matrix,L,GameOver)
 
 		    end
 	    end;
@@ -110,7 +113,7 @@ checker(Matrix,L) ->
 	    if Bool == true ->
 		    NewMatrix = grid:move_elem_r(3,10,X-1,Matrix),
 		    {boxarn,hoppsansa@ubuntu} ! {move,ship,right},
-		    checker(NewMatrix,L);
+		    checker(NewMatrix,L,GameOver);
 	       true ->
 		    case Type of
 			1 ->
@@ -118,13 +121,14 @@ checker(Matrix,L) ->
 			2 ->
 			    io:format("krock med ett meteor~n"), 
 			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
-			    gameOver(L),
-			    checker(Matrix,L);
+			    GameOver ! {self(),L},
+			    exit(self(),normal);
+			    %checker(Matrix,L,GameOver);
 			3 -> 
 			    io:format("krock med ett skepp~n");
 			boundry ->
 			    io:format("Utanför griden,höger!"),
-			    checker(Matrix,L)
+			    checker(Matrix,L,GameOver)
 			    
 		    end
 	    end;
@@ -139,10 +143,11 @@ checker(Matrix,L) ->
 		    if  P == true ->
 			    NewMatrix = grid:move_elem_down(2,Y,X,Matrix),
 			    U = lists:keyreplace(MPID,2,L,{2,MPID,{X,(Y+1)}}),
+			    io:format("~p",[U]),
 			    {boxarn,hoppsansa@ubuntu} ! {move,meteor,MPID},
-			    checker(NewMatrix,U);	  
+			    checker(NewMatrix,U,GameOver);	  
 				true ->
-					  checker(Matrix,L)
+					  checker(Matrix,L,GameOver)
 			    
 		       end;
 	       true ->
@@ -163,23 +168,24 @@ checker(Matrix,L) ->
 			    {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
 			    % {boxarn,hoppsansa@ubuntu} ! {score},
 			    
-			    checker(NewMatrix,U);
+			    checker(NewMatrix,U,GameOver);
 			    
 			2 ->
 			    io:format("Gammal meteor, krock med en meteor~n"),
-			    checker(Matrix,L);
+			    checker(Matrix,L,GameOver);
 			3 -> 
 			    io:format("Gammal meteor, krock med ett skepp~n"),
 			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
-			    gameOver(L),
-			    checker(Matrix,L);
+			    GameOver ! {self(),L},
+			    exit(self(),normal);
+			    %checker(Matrix,L,GameOver);
 			boundry ->
 			    U = lists:keydelete(MPID,2,L),
 			    NewMatrix = grid:change_elem(0,Y,X,Matrix),
 			    {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},
 			    
 			    exit(MPID,normal),
-			    checker(NewMatrix,U)
+			    checker(NewMatrix,U,GameOver)
 			    
 		       end
 	    end;
@@ -194,15 +200,15 @@ checker(Matrix,L) ->
 			    U = lists:keyreplace(SPID,2,L,{1,SPID,{X,(Y-1)}}),
 			    io:format("~p",[U]),
 			    {boxarn,hoppsansa@ubuntu} ! {move,shot,SPID},
-			    checker(NewMatrix,U);
+			    checker(NewMatrix,U,GameOver);
 			true ->
-			    checker(Matrix,L)
+			    checker(Matrix,L,GameOver)
 			end;
 	       true -> case Type of
 			   1 ->
 			       io:format("Gamalt skott,krock med ett skott"),
 			       			    
-			    checker(Matrix,L);
+			    checker(Matrix,L,GameOver);
 
 			   2 ->
 			       io:format("Gamalt skott,krock med en meteor~n"), 
@@ -222,7 +228,7 @@ checker(Matrix,L) ->
 						% {boxarn,hoppsansa@ubuntu} ! {score},
 			       
 			       
-			       checker(NewMatrix, U);
+			       checker(NewMatrix, U,GameOver);
 			   3 -> 
 			       io:format("Gamalt skott,krock med ett skepp~n");
 
@@ -231,7 +237,7 @@ checker(Matrix,L) ->
 			       NewMatrix = grid:change_elem(0,Y,X,Matrix),
 			       {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
 			       exit(SPID,normal),
-			       checker(NewMatrix,U)
+			       checker(NewMatrix,U,GameOver)
 
 			      
 			  end
@@ -245,7 +251,7 @@ checker(Matrix,L) ->
 		    U = lists:append(L,[{2,MPID,{X,Y}}]),
 		    Pos = X * 110,
 		    {boxarn,hoppsansa@ubuntu} ! {add,meteor,{MPID,Pos}},
-		    checker(NewMatrix,U);
+		    checker(NewMatrix,U,GameOver);
 	       true -> case Type of
 			   1 ->
 			       io:format("Ny meteor, krock med ett skott"),
@@ -255,11 +261,11 @@ checker(Matrix,L) ->
 			       {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
 			       exit(MPID,normal),
 			       exit(SPID,normal),
-			       checker(NewMatrix,U);
+			       checker(NewMatrix,U,GameOver);
 			   2 ->
 			       io:format("Ny meteor, krock med en meteor~n"),
 			       exit(MPID,normal),
-			       checker(Matrix,L);
+			       checker(Matrix,L,GameOver);
 			   3 -> 
 			       io:format("Ny meteor, krock med ett skepp~n")
 		       end
@@ -273,12 +279,12 @@ checker(Matrix,L) ->
 		    U = lists:append(L,[{1,SPID,{X,Y}}]),
 		    Pos = X * 110,
 		    {boxarn,hoppsansa@ubuntu} ! {add,shot,{SPID,Pos}},
-		    checker(NewMatrix,U);
+		    checker(NewMatrix,U,GameOver);
 	       true -> case Type of
 			   1 ->
 			       io:format("Nytt skott, krock med ett skott"),
 			       exit(SPID,normal),
-			       checker(Matrix,L);
+			       checker(Matrix,L,GameOver);
 			   2 ->
 			       io:format("Nytt skott, krock med en meteor~n"),
 			       {_T, MPID,{X,Y}} = lists:keyfind({X,9},3,L),
@@ -291,7 +297,7 @@ checker(Matrix,L) ->
 			    
 			       exit(MPID,normal),
 			       exit(SPID,normal),               %avslutar processerna.
-			       checker(NewMatrix, U); 
+			       checker(NewMatrix, U,GameOver); 
 			   3 -> 
 			       io:format("Nytt skott, krock med ett skepp~n")
 		       end
@@ -303,7 +309,7 @@ checker(Matrix,L) ->
 	    lists:keymap(fun(N) ->
 				 N ! {move , lists:keyfind(N,2,L) 
 				     } end,2,L),
-	    checker(Matrix,L)
+	    checker(Matrix,L,GameOver)
 	end.
 
 
@@ -346,6 +352,27 @@ spawnMeteor(Checker) ->
 	end.
     
 gameOver(Listan) ->
-    io:format("GAMEOVER").
-    %lists:keymap(fun(N) ->  exit(N,normal) end,2,Listan).
+    receive 
+	{X,Y,Z} ->
+	    A = lists:append([X],[Y]),
+	    B = lists:append(A,[Z]),
+	    gameOver(B);
+	
+	{X,Objectlist} ->         % X = checker pid.
+	    
+	    io:format("GameOver ~n"),
+	    
+	    lists:map(fun(N) ->  exit(N,normal) end,Listan),
+	    lists:keymap(fun(N) ->  exit(N,normal) end,2,Objectlist),
+	    io:format("Listan:~p ~n",[Listan]),
+	    io:format("ObjectListanListan:~p ~n",[Objectlist]),
+	    {P,A,{C,M}} = lists:keyfind(2,1,Objectlist),
+	    exit(A,normal),
+	    I = erlang:process_info(A),
+	    io:format("Process_info:~p ~n",[I]),
+	    exit(X,normal),
+	    halt(),
+	    exit(self(),normal)
+	    
+    end.
 
