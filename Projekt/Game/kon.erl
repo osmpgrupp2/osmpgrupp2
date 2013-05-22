@@ -330,7 +330,7 @@ checker(Matrix,L,GameOver) ->
 
 meteorCreator(CheckerStart,X) ->
     timer:sleep(800),    
-    O = ((X rem 51) +1),   %10 
+    O = random:uniform(51),   %10 
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
     meteorCreator(CheckerStart,O).
