@@ -64,6 +64,7 @@ start() ->
     GameOver = spawn_link(kon,gameOver,[L]),
     CheckerStart = spawn_link(kon,checkerStart,[51,GameOver]),%10
     Counter = spawn_link(kon,counter,[CheckerStart]),
+    CounterShot = spawn_link(kon,counterShot,[CheckerStart]),
     ShotCreator = spawn_link(kon,shotCreator,[CheckerStart]), 
     MeteorCreator = spawn_link(kon,meteorCreator,[CheckerStart,0]), %Detta ska vara en hårdkodad siffra!
     GameOver ! {Counter,ShotCreator,MeteorCreator},
@@ -164,7 +165,7 @@ checker(Matrix,L,GameOver) ->
 			    
 			    {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},
 			    {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
-			    % {boxarn,hoppsansa@ubuntu} ! {score},
+			    {boxarn,hoppsansa@ubuntu} ! {score,hej,10},
 			    
 			    checker(NewMatrix,U,GameOver);
 			    
@@ -223,7 +224,7 @@ checker(Matrix,L,GameOver) ->
 			       
 			       {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},  % meddelar java
 			       {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
-						% {boxarn,hoppsansa@ubuntu} ! {score},
+			       {boxarn,hoppsansa@ubuntu} ! {score,hej,10},
 			       
 			       
 			       checker(NewMatrix, U,GameOver);
@@ -257,6 +258,7 @@ checker(Matrix,L,GameOver) ->
 			       U = lists:keydelete(SPID,2,L),
 			       NewMatrix = grid:change_elem(0,Y,X,Matrix),
 			       {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
+			       {boxarn,hoppsansa@ubuntu} ! {score,hej,10},
 			       exit(MPID,normal),
 			       exit(SPID,normal),
 			       checker(NewMatrix,U,GameOver);
@@ -291,7 +293,7 @@ checker(Matrix,L,GameOver) ->
 			      
 			       
 			       {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},  % meddelar java
-			      	% {boxarn,hoppsansa@ubuntu} ! {score},
+			       {boxarn,hoppsansa@ubuntu} ! {score,hej,10},
 			    
 			       exit(MPID,normal),
 			       exit(SPID,normal),               %avslutar processerna.
@@ -301,18 +303,33 @@ checker(Matrix,L,GameOver) ->
 		       end
 	    end;
 
-	{counter} ->
+	{counter,meteor} ->
 	    % iterera_over_listan,L och skicka meddelande till processerna som ska förflyttas.
 	    
+	    A = lists:filter(fun(X) ->
+				     element(1,X) =:= 2
+			     end,
+			     L),
+	    
 	    lists:keymap(fun(N) ->
-				 N ! {move , lists:keyfind(N,2,L) 
-				     } end,2,L),
+				 N ! {move , lists:keyfind(N,2,A) 
+				     } end,2,A),
+	    checker(Matrix,L,GameOver);
+	{counter,shot} ->
+	    A = lists:filter(fun(X) ->
+				     element(1,X) =:= 1
+			     end,
+			     L),
+	    
+	    lists:keymap(fun(N) ->
+				 N ! {move , lists:keyfind(N,2,A) 
+			 } end,2,A),
 	    checker(Matrix,L,GameOver)
-	end.
+    end.
 
 
 meteorCreator(CheckerStart,X) ->
-    timer:sleep(2000),    
+    timer:sleep(800),    
     O = ((X rem 51) +1),   %10 
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
@@ -329,9 +346,14 @@ shotCreator(CheckerStart) ->
     end.
 
 counter(Checker) ->
-    timer:sleep(2500),
-    Checker ! {counter},
+    timer:sleep(200),
+    Checker ! {counter,meteor},
     counter(Checker).
+
+counterShot(Checker) ->
+    timer:sleep(40),
+    Checker ! {counter,shot},
+    counterShot(Checker).
 
 spawnShot(Checker) ->
     receive
