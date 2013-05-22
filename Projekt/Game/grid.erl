@@ -1,3 +1,5 @@
+%% @author Linkan
+
 -module(grid).
 
 -export([matrix/1,find_elem/3, change_elem/4, move_elem_down/4, move_elem_up/4, move_elem_l/4, move_elem_r/4,check_elem/3, check_boundry/1]).
@@ -88,7 +90,7 @@ end.
 
 %% @doc Check if Point is inside the boundry.
 check_boundry(Point) ->
-    if (Point < 11 andalso Point > 0) ->
+    if (Point < 52 andalso Point > 0) ->
 	     {true};
 	true ->
 	     {false}

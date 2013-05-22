@@ -1,0 +1,69 @@
+09:54:59,776 F: (ErlangCore.java:77) : Starting CORE Thread[Worker-4,5,main]
+09:54:59,797 I: (ErlangCoreLogger.java:43) : *** starting Erlide v0.21.0.201303251033 (core=0.20.1.201303251033) *** (UTF-8) 
+09:54:59,811 F: (ErlangCore.java:94) : Started CORE
+09:54:59,958 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,54,59}},"Can't set long node name!\nPlease check your configuration\n",[]}
+09:54:59,962 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,54,59}},crash_report,[[{initial_call,{net_kernel,init,['Argument__1']}},{pid,<0.20.0>},{registered_name,[]},{error_info,{exit,{error,badarg},[{gen_server,init_it,6},{proc_lib,init_p_do_apply,3}]}},{ancestors,[net_sup,kernel_sup,<0.9.0>]},{messages,[]},{links,[<0.17.0>]},{dictionary,[{longnames,true}]},{trap_exit,true},{status,running},{heap_size,1597},{stack_size,24},{reductions,961}],[]]}
+09:54:59,963 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,54,59}},supervisor_report,[{supervisor,{local,net_sup}},{errorContext,start_error},{reason,{'EXIT',nodistribution}},{offender,[{pid,undefined},{name,net_kernel},{mfargs,{net_kernel,start_link,[[foo1369209299878,longnames]]}},{restart_type,permanent},{shutdown,2000},{child_type,worker}]}]}
+09:54:59,964 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,54,59}},supervisor_report,[{supervisor,{local,kernel_sup}},{errorContext,start_error},{reason,shutdown},{offender,[{pid,undefined},{name,net_sup},{mfargs,{erl_distribution,start_link,[]}},{restart_type,permanent},{shutdown,infinity},{child_type,supervisor}]}]}
+09:54:59,964 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,54,59}},std_info,[{application,kernel},{exited,{shutdown,{kernel,start,[normal,[]]}}},{type,permanent}]}
+09:55:00,465 F: (ErlangHostnameRetriever.java:96) : ?> {"Kernel pid terminated",application_controller,"{application_start_failure,kernel,{shutdown,{kernel,start,[normal,[]]}}}"}
+09:55:00,684 F: (ErlangHostnameRetriever.java:36) : Test long hostname: null
+09:55:00,685 W: (ErlangHostnameRetriever.java:42) : Can't use null as long name
+09:55:00,753 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,0}},"Can't set long node name!\nPlease check your configuration\n",[]}
+09:55:00,754 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,0}},crash_report,[[{initial_call,{net_kernel,init,['Argument__1']}},{pid,<0.20.0>},{registered_name,[]},{error_info,{exit,{error,badarg},[{gen_server,init_it,6},{proc_lib,init_p_do_apply,3}]}},{ancestors,[net_sup,kernel_sup,<0.9.0>]},{messages,[]},{links,[<0.17.0>]},{dictionary,[{longnames,true}]},{trap_exit,true},{status,running},{heap_size,1597},{stack_size,24},{reductions,961}],[]]}
+09:55:00,754 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,0}},supervisor_report,[{supervisor,{local,net_sup}},{errorContext,start_error},{reason,{'EXIT',nodistribution}},{offender,[{pid,undefined},{name,net_kernel},{mfargs,{net_kernel,start_link,[[foo1369209300686,longnames]]}},{restart_type,permanent},{shutdown,2000},{child_type,worker}]}]}
+09:55:00,755 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,0}},supervisor_report,[{supervisor,{local,kernel_sup}},{errorContext,start_error},{reason,shutdown},{offender,[{pid,undefined},{name,net_sup},{mfargs,{erl_distribution,start_link,[]}},{restart_type,permanent},{shutdown,infinity},{child_type,supervisor}]}]}
+09:55:00,755 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,0}},std_info,[{application,kernel},{exited,{shutdown,{kernel,start,[normal,[]]}}},{type,permanent}]}
+09:55:01,260 F: (ErlangHostnameRetriever.java:96) : ?> {"Kernel pid terminated",application_controller,"{application_start_failure,kernel,{shutdown,{kernel,start,[normal,[]]}}}"}
+09:55:01,479 F: (ErlangHostnameRetriever.java:36) : Test long hostname: ubuntu
+09:55:01,502 F: (ErlangHostnameRetriever.java:65) : Ping: foo1369209300686@ubuntu
+09:55:02,512 W: (ErlangHostnameRetriever.java:42) : Can't use ubuntu as long name
+09:55:02,739 F: (ErlangHostnameRetriever.java:96) : ?> Eshell V5.8.5  (abort with ^G)
+09:55:02,741 F: (ErlangHostnameRetriever.java:104) : >> (foo1369209302512@ubuntu)1>
+09:55:02,742 F: (ErlangHostnameRetriever.java:36) : Test short hostname: ubuntu
+09:55:02,744 F: (ErlangHostnameRetriever.java:65) : Ping: foo1369209302512@ubuntu
+09:55:02,763 F: (ErlangHostnameRetriever.java:40) : OK
+09:55:02,859 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,2}},"Can't set long node name!\nPlease check your configuration\n",[]}
+09:55:02,860 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,2}},crash_report,[[{initial_call,{net_kernel,init,['Argument__1']}},{pid,<0.20.0>},{registered_name,[]},{error_info,{exit,{error,badarg},[{gen_server,init_it,6},{proc_lib,init_p_do_apply,3}]}},{ancestors,[net_sup,kernel_sup,<0.9.0>]},{messages,[]},{links,[<0.17.0>]},{dictionary,[{longnames,true}]},{trap_exit,true},{status,running},{heap_size,1597},{stack_size,24},{reductions,961}],[]]}
+09:55:02,860 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,2}},supervisor_report,[{supervisor,{local,net_sup}},{errorContext,start_error},{reason,{'EXIT',nodistribution}},{offender,[{pid,undefined},{name,net_kernel},{mfargs,{net_kernel,start_link,[[foo1369209302765,longnames]]}},{restart_type,permanent},{shutdown,2000},{child_type,worker}]}]}
+09:55:02,860 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,2}},supervisor_report,[{supervisor,{local,kernel_sup}},{errorContext,start_error},{reason,shutdown},{offender,[{pid,undefined},{name,net_sup},{mfargs,{erl_distribution,start_link,[]}},{restart_type,permanent},{shutdown,infinity},{child_type,supervisor}]}]}
+09:55:02,861 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,2}},std_info,[{application,kernel},{exited,{shutdown,{kernel,start,[normal,[]]}}},{type,permanent}]}
+09:55:03,365 F: (ErlangHostnameRetriever.java:96) : ?> {"Kernel pid terminated",application_controller,"{application_start_failure,kernel,{shutdown,{kernel,start,[normal,[]]}}}"}
+09:55:03,575 F: (ErlangHostnameRetriever.java:36) : Test long hostname: null
+09:55:03,576 W: (ErlangHostnameRetriever.java:42) : Can't use null as long name
+09:55:03,653 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,3}},"Can't set long node name!\nPlease check your configuration\n",[]}
+09:55:03,654 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,3}},crash_report,[[{initial_call,{net_kernel,init,['Argument__1']}},{pid,<0.20.0>},{registered_name,[]},{error_info,{exit,{error,badarg},[{gen_server,init_it,6},{proc_lib,init_p_do_apply,3}]}},{ancestors,[net_sup,kernel_sup,<0.9.0>]},{messages,[]},{links,[<0.17.0>]},{dictionary,[{longnames,true}]},{trap_exit,true},{status,running},{heap_size,1597},{stack_size,24},{reductions,961}],[]]}
+09:55:03,655 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,3}},supervisor_report,[{supervisor,{local,net_sup}},{errorContext,start_error},{reason,{'EXIT',nodistribution}},{offender,[{pid,undefined},{name,net_kernel},{mfargs,{net_kernel,start_link,[[foo1369209303577,longnames]]}},{restart_type,permanent},{shutdown,2000},{child_type,worker}]}]}
+09:55:03,655 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,3}},supervisor_report,[{supervisor,{local,kernel_sup}},{errorContext,start_error},{reason,shutdown},{offender,[{pid,undefined},{name,net_sup},{mfargs,{erl_distribution,start_link,[]}},{restart_type,permanent},{shutdown,infinity},{child_type,supervisor}]}]}
+09:55:03,666 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,3}},std_info,[{application,kernel},{exited,{shutdown,{kernel,start,[normal,[]]}}},{type,permanent}]}
+09:55:04,172 F: (ErlangHostnameRetriever.java:96) : ?> {"Kernel pid terminated",application_controller,"{application_start_failure,kernel,{shutdown,{kernel,start,[normal,[]]}}}"}
+09:55:04,389 F: (ErlangHostnameRetriever.java:36) : Test long hostname: ubuntu
+09:55:04,391 F: (ErlangHostnameRetriever.java:65) : Ping: foo1369209303577@ubuntu
+09:55:05,395 W: (ErlangHostnameRetriever.java:42) : Can't use ubuntu as long name
+09:55:05,631 F: (ErlangHostnameRetriever.java:96) : ?> Eshell V5.8.5  (abort with ^G)
+09:55:05,633 F: (ErlangHostnameRetriever.java:104) : >> (foo1369209305395@ubuntu)1>
+09:55:05,634 F: (ErlangHostnameRetriever.java:36) : Test short hostname: ubuntu
+09:55:05,636 F: (ErlangHostnameRetriever.java:65) : Ping: foo1369209305395@ubuntu
+09:55:05,643 F: (ErlangHostnameRetriever.java:40) : OK
+09:55:05,738 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,5}},"Can't set long node name!\nPlease check your configuration\n",[]}
+09:55:05,739 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,5}},crash_report,[[{initial_call,{net_kernel,init,['Argument__1']}},{pid,<0.20.0>},{registered_name,[]},{error_info,{exit,{error,badarg},[{gen_server,init_it,6},{proc_lib,init_p_do_apply,3}]}},{ancestors,[net_sup,kernel_sup,<0.9.0>]},{messages,[]},{links,[<0.17.0>]},{dictionary,[{longnames,true}]},{trap_exit,true},{status,running},{heap_size,1597},{stack_size,24},{reductions,961}],[]]}
+09:55:05,739 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,5}},supervisor_report,[{supervisor,{local,net_sup}},{errorContext,start_error},{reason,{'EXIT',nodistribution}},{offender,[{pid,undefined},{name,net_kernel},{mfargs,{net_kernel,start_link,[[foo1369209305644,longnames]]}},{restart_type,permanent},{shutdown,2000},{child_type,worker}]}]}
+09:55:05,739 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,5}},supervisor_report,[{supervisor,{local,kernel_sup}},{errorContext,start_error},{reason,shutdown},{offender,[{pid,undefined},{name,net_sup},{mfargs,{erl_distribution,start_link,[]}},{restart_type,permanent},{shutdown,infinity},{child_type,supervisor}]}]}
+09:55:05,740 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,5}},std_info,[{application,kernel},{exited,{shutdown,{kernel,start,[normal,[]]}}},{type,permanent}]}
+09:55:06,245 F: (ErlangHostnameRetriever.java:96) : ?> {"Kernel pid terminated",application_controller,"{application_start_failure,kernel,{shutdown,{kernel,start,[normal,[]]}}}"}
+09:55:06,457 F: (ErlangHostnameRetriever.java:36) : Test long hostname: null
+09:55:06,458 W: (ErlangHostnameRetriever.java:42) : Can't use null as long name
+09:55:06,544 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,6}},"Can't set long node name!\nPlease check your configuration\n",[]}
+09:55:06,544 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,6}},crash_report,[[{initial_call,{net_kernel,init,['Argument__1']}},{pid,<0.20.0>},{registered_name,[]},{error_info,{exit,{error,badarg},[{gen_server,init_it,6},{proc_lib,init_p_do_apply,3}]}},{ancestors,[net_sup,kernel_sup,<0.9.0>]},{messages,[]},{links,[<0.17.0>]},{dictionary,[{longnames,true}]},{trap_exit,true},{status,running},{heap_size,1597},{stack_size,24},{reductions,961}],[]]}
+09:55:06,544 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,6}},supervisor_report,[{supervisor,{local,net_sup}},{errorContext,start_error},{reason,{'EXIT',nodistribution}},{offender,[{pid,undefined},{name,net_kernel},{mfargs,{net_kernel,start_link,[[foo1369209306458,longnames]]}},{restart_type,permanent},{shutdown,2000},{child_type,worker}]}]}
+09:55:06,544 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,6}},supervisor_report,[{supervisor,{local,kernel_sup}},{errorContext,start_error},{reason,shutdown},{offender,[{pid,undefined},{name,net_sup},{mfargs,{erl_distribution,start_link,[]}},{restart_type,permanent},{shutdown,infinity},{child_type,supervisor}]}]}
+09:55:06,545 F: (ErlangHostnameRetriever.java:96) : ?> {error_logger,{{2013,5,22},{9,55,6}},std_info,[{application,kernel},{exited,{shutdown,{kernel,start,[normal,[]]}}},{type,permanent}]}
+09:55:07,050 F: (ErlangHostnameRetriever.java:96) : ?> {"Kernel pid terminated",application_controller,"{application_start_failure,kernel,{shutdown,{kernel,start,[normal,[]]}}}"}
+09:55:07,367 F: (ErlangHostnameRetriever.java:36) : Test long hostname: ubuntu
+09:55:07,368 F: (ErlangHostnameRetriever.java:65) : Ping: foo1369209306458@ubuntu
+09:55:08,370 W: (ErlangHostnameRetriever.java:42) : Can't use ubuntu as long name
+09:55:08,582 F: (ErlangHostnameRetriever.java:96) : ?> Eshell V5.8.5  (abort with ^G)
+09:55:08,583 F: (ErlangHostnameRetriever.java:104) : >> (foo1369209308371@ubuntu)1>
+09:55:08,584 F: (ErlangHostnameRetriever.java:36) : Test short hostname: ubuntu
+09:55:08,587 F: (ErlangHostnameRetriever.java:65) : Ping: foo1369209308371@ubuntu
+09:55:08,594 F: (ErlangHostnameRetriever.java:40) : OK
