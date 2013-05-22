@@ -1,4 +1,7 @@
-
+/*
+ * @doc represents a spaceship with an
+ * x and an y coordinate
+ */
 public class SpaceShip extends GameObject{
 
 	/*

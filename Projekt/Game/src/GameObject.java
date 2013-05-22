@@ -1,4 +1,6 @@
-
+/*
+ * @doc represents an object used in games
+ */
 public class GameObject {
 	
 	private String identifier;

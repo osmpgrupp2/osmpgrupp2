@@ -3,13 +3,21 @@ import java.util.Iterator;
 import java.util.List;
 
 /*
- * @doc represents a gameboard
+ * @doc represents a gameboard with a
+ * 		height representing the height of the gameBoard
+ * 		width representing the width of the gameBoard
+ * 		bottomMariginal	representing the mariginal at the bottom of the gameBoard
+ * 		score representing the current score
+ * 		spaceShip representing the spaceship
+ * 		MeteorList representing all the meteors
+ * 		ShotList representing all the shots
  */
 
 public class GameBoard {
 	private int heigth;
 	private int width;
 	private int bottomMariginal = 30;
+	private int score;
 	private SpaceShip spaceShip;
 	private List<GameObject> MeteorList = new ArrayList<GameObject>();
 	private List<GameObject> ShotList = new ArrayList<GameObject>();
@@ -20,9 +28,28 @@ public class GameBoard {
 	public GameBoard(int heigth, int width){
 		this.heigth = heigth;
 		this.width = width;
+
 		this.spaceShip = new SpaceShip(520, this.heigth - bottomMariginal);
+
+		this.score = 0;
+		  	
+
 	}
  
+	/*
+	 * @doc returns current score
+	 */
+	public int getScore(){
+		return this.score;
+	}
+	
+	/*
+	 * @doc adds score to current score
+	 */
+	public void addScore(int score){
+		this.score += score;
+	}
+	
 	/*
 	 * @doc adds a Meteor with identifier identifier and y-position y
 	 */
