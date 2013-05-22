@@ -95,7 +95,7 @@ checker(Matrix,L,GameOver) ->
 			    io:format("krock med ett skott");
 			2 ->
 			    io:format("krock med ett meteor~n"),
-			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
+			    {boxarn,hoppsansa@ubuntu} ! {gameover},
 			    GameOver ! {self(),L},
 			    exit(self(),normal);
 			    %checker(Matrix,L,GameOver);
@@ -121,7 +121,7 @@ checker(Matrix,L,GameOver) ->
 			    io:format("krock med ett skott");
 			2 ->
 			    io:format("krock med ett meteor~n"), 
-			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
+			    {boxarn,hoppsansa@ubuntu} ! {gameover},
 			    GameOver ! {self(),L},
 			    exit(self(),normal);
 			    %checker(Matrix,L,GameOver);
@@ -174,7 +174,7 @@ checker(Matrix,L,GameOver) ->
 			    checker(Matrix,L,GameOver);
 			3 -> 
 			    io:format("Gammal meteor, krock med ett skepp~n"),
-			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
+			    {boxarn,hoppsansa@ubuntu} ! {gameover},
 			    GameOver ! {self(),L},
 			    exit(self(),normal);
 			    %checker(Matrix,L,GameOver);
