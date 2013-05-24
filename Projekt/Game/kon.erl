@@ -183,12 +183,9 @@ checker(Matrix,L,GameOver) ->
 			    U = lists:keydelete(MPID,2,L),
 			    NewMatrix = grid:change_elem(0,Y,X,Matrix),
 			    {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},
-<<<<<<< HEAD
-			    {boxarn,hoppsansa@ubuntu} ! {score,hej,-6},
-=======
-			     {boxarn,hoppsansa@ubuntu} ! {score,hej,-5},
->>>>>>> 83803eda4b3f4492dfbeda17cea032e5fb5ee5c5
-			    
+
+			    {boxarn,hoppsansa@ubuntu} ! {score,hej,-5},
+		    
 			    exit(MPID,normal),
 			    checker(NewMatrix,U,GameOver)
 			    
@@ -335,17 +332,11 @@ checker(Matrix,L,GameOver) ->
 	    checker(Matrix,L,GameOver)
     end.
 
-<<<<<<< HEAD
+
 %% @doc every 800 millisecond we will spawn a new meteor at a random position in our grid. 
 meteorCreator(CheckerStart) ->
-    timer:sleep(800),    
-    O = random:uniform(51),   %10 
-=======
-
-meteorCreator(CheckerStart,X) ->
     timer:sleep(random:uniform(10)*200), %800   
     O = (random:uniform(51)),%51
->>>>>>> 83803eda4b3f4492dfbeda17cea032e5fb5ee5c5
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
     meteorCreator(CheckerStart).
@@ -362,13 +353,13 @@ shotCreator(CheckerStart) ->
 	    shotCreator(CheckerStart)
     end.
 
-%% @doc Every 200 millisecond, we will move all of our meteors. 
+%% @doc Every 100 millisecond, we will move all of our meteors. 
 counter(Checker) ->
     timer:sleep(100),
     Checker ! {counter,meteor},
     counter(Checker).
 
-%% @doc Every 40 millisecond, we will move all of our shots.
+%% @doc Every 30 millisecond, we will move all of our shots.
 counterShot(Checker) ->
     timer:sleep(30),
     Checker ! {counter,shot},
@@ -392,11 +383,9 @@ spawnMeteor(Checker) ->
 		
 	end.
 
-<<<<<<< HEAD
+
 %% @doc when the spaceship collide with a meteor the game is over, and this function clear all of the processes that has been spawned.    
-=======
-    
->>>>>>> 83803eda4b3f4492dfbeda17cea032e5fb5ee5c5
+
 gameOver(Listan) ->
     receive 
 	{X,Y,Z,U} ->

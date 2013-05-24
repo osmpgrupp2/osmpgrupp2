@@ -182,7 +182,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		addKeyListener(this);
 	}
 
-	@SuppressWarnings("deprecation")
+	
 	public void paint(Graphics g){
 		d.clearRect(0, 0, gameWidth, gameHeight);
 		if(gameOver){
