@@ -36,6 +36,8 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	private OtpMbox MyBox; 
 	private OtpErlangPid erlangpid;
 	private OtpErlangObject object = null;
+	
+	private Thread th;
 
 
 	/*
@@ -174,7 +176,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		}
 		gameBoard = new GameBoard(gameHeight, gameWidth);
 		setSize(gameWidth,gameHeight);
-		Thread th = new Thread(this);
+		th = new Thread(this);
 		th.start();
 
 		off = createImage(gameWidth,gameHeight);
@@ -182,10 +184,12 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 		addKeyListener(this);
 	}
 
+	@SuppressWarnings("deprecation")
 	public void paint(Graphics g){
 		d.clearRect(0, 0, gameWidth, gameHeight);
 		if(gameOver){
 			d.drawImage(gameover, 0, 0, gameWidth, gameHeight, this);
+			
 		}
 		else{
 

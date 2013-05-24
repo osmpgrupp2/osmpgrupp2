@@ -1,4 +1,4 @@
-%% @author david
+%% @author Grupp 2
 %% @doc @todo Add description to receive.
 %% erl -sname e_node -setcookie hojjsa
 
@@ -27,6 +27,7 @@
 % {pid,pos} används när vi ska skapa ett objekt.
 
 
+%% @doc Receives messages at the form {atom,int,int}, potentially from an frond-end. This messages are then evaluated and sends it further with another message, depending on what it received. 
 res(Checker, ShotCreator) ->
     io:format("tjena2~n"),
     Text = net_adm:ping(hoppsansa@ubuntu),
@@ -52,7 +53,7 @@ res(Checker, ShotCreator) ->
 		res(Checker, ShotCreator)		
     end.
 
-
+%% @doc sends a message just to tell what pid this erlang process is running on. it also spawns all of the sub-processes that the program will need.
 start() ->
     io:format("tjena1~n"),
     Text = net_adm:ping(hoppsansa@ubuntu),
@@ -66,11 +67,11 @@ start() ->
     Counter = spawn_link(kon,counter,[CheckerStart]),
     CounterShot = spawn_link(kon,counterShot,[CheckerStart]),
     ShotCreator = spawn_link(kon,shotCreator,[CheckerStart]), 
-    MeteorCreator = spawn_link(kon,meteorCreator,[CheckerStart,0]), %Detta ska vara en hårdkodad siffra!
-    GameOver ! {Counter,ShotCreator,MeteorCreator},
+    MeteorCreator = spawn_link(kon,meteorCreator,[CheckerStart]),
+    GameOver ! {Counter,CounterShot,ShotCreator,MeteorCreator},
     res(CheckerStart, ShotCreator).
 
-
+%% @doc Initiates the grid and the list that will hold all the meteors and shots. it also initiates the ship inside the grid. 
 checkerStart(N,GameOver) ->
     Matrix = grid:matrix(N),
     L = [],
@@ -79,7 +80,7 @@ checkerStart(N,GameOver) ->
     
     
 
-
+%% @doc Receives a ton of messages and is controlling our collision handler, our communication to our front-end and shutting down unused processes. 
 checker(Matrix,L,GameOver) ->
     receive
 	{ship,{X,_Y},left} ->
@@ -98,7 +99,7 @@ checker(Matrix,L,GameOver) ->
 			    {boxarn,hoppsansa@ubuntu} ! {gameover},
 			    GameOver ! {self(),L},
 			    exit(self(),normal);
-			    %checker(Matrix,L,GameOver);
+			    
 			3 -> 
 			    io:format("krock med ett skepp~n");
 			boundry ->
@@ -124,7 +125,7 @@ checker(Matrix,L,GameOver) ->
 			    {boxarn,hoppsansa@ubuntu} ! {gameover},
 			    GameOver ! {self(),L},
 			    exit(self(),normal);
-			    %checker(Matrix,L,GameOver);
+			    
 			3 -> 
 			    io:format("krock med ett skepp~n");
 			boundry ->
@@ -182,6 +183,7 @@ checker(Matrix,L,GameOver) ->
 			    U = lists:keydelete(MPID,2,L),
 			    NewMatrix = grid:change_elem(0,Y,X,Matrix),
 			    {boxarn,hoppsansa@ubuntu} ! {remove,meteor,MPID},
+			    {boxarn,hoppsansa@ubuntu} ! {score,hej,-6},
 			    
 			    exit(MPID,normal),
 			    checker(NewMatrix,U,GameOver)
@@ -235,6 +237,7 @@ checker(Matrix,L,GameOver) ->
 			       U = lists:keydelete(SPID,2,L),
 			       NewMatrix = grid:change_elem(0,Y,X,Matrix),
 			       {boxarn,hoppsansa@ubuntu} ! {remove,shot,SPID},
+			       {boxarn,hoppsansa@ubuntu} ! {score,hej,-2},
 			       exit(SPID,normal),
 			       checker(NewMatrix,U,GameOver)
 
@@ -327,14 +330,16 @@ checker(Matrix,L,GameOver) ->
 	    checker(Matrix,L,GameOver)
     end.
 
-
-meteorCreator(CheckerStart,X) ->
+%% @doc every 800 millisecond we will spawn a new meteor at a random position in our grid. 
+meteorCreator(CheckerStart) ->
     timer:sleep(800),    
     O = random:uniform(51),   %10 
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
-    meteorCreator(CheckerStart,O).
+    meteorCreator(CheckerStart).
 
+
+%% @doc Waiting for a message that tells this function to spawn a new shot, at the spaceships position. 
 shotCreator(CheckerStart) ->
 
     receive
@@ -345,16 +350,20 @@ shotCreator(CheckerStart) ->
 	    shotCreator(CheckerStart)
     end.
 
+%% @doc Every 200 millisecond, we will move all of our meteors. 
 counter(Checker) ->
     timer:sleep(200),
     Checker ! {counter,meteor},
     counter(Checker).
 
+%% @doc Every 40 millisecond, we will move all of our shots.
 counterShot(Checker) ->
     timer:sleep(40),
     Checker ! {counter,shot},
     counterShot(Checker).
 
+
+%% @doc this function has spawned as a new process and waits on a message to move, andsends another message that it's time to move.
 spawnShot(Checker) ->
     receive
 	{move,{_S,Pid,{X,Y}}} ->
@@ -362,7 +371,7 @@ spawnShot(Checker) ->
 	    spawnShot(Checker)
 	end.
 
-
+%% @doc this function has spawned as a new process and waits on a message to move, andsends another message that it's time to move.
 spawnMeteor(Checker) ->
     receive
 	{move,{_S,Pid,{X,Y}}} ->
@@ -370,13 +379,15 @@ spawnMeteor(Checker) ->
 	    spawnMeteor(Checker)
 		
 	end.
-    
+
+%% @doc when the spaceship collide with a meteor the game is over, and this function clear all of the processes that has been spawned.    
 gameOver(Listan) ->
     receive 
-	{X,Y,Z} ->
+	{X,Y,Z,U} ->
 	    A = lists:append([X],[Y]),
 	    B = lists:append(A,[Z]),
-	    gameOver(B);
+	    C = lists:append(B,[U]),
+	    gameOver(C);
 	
 	{X,Objectlist} ->         % X = checker pid.
 	    
@@ -384,12 +395,6 @@ gameOver(Listan) ->
 	    
 	    lists:map(fun(N) ->  exit(N,normal) end,Listan),
 	    lists:keymap(fun(N) ->  exit(N,normal) end,2,Objectlist),
-	    io:format("Listan:~p ~n",[Listan]),
-	    io:format("ObjectListanListan:~p ~n",[Objectlist]),
-	    {P,A,{C,M}} = lists:keyfind(2,1,Objectlist),
-	    exit(A,normal),
-	    I = erlang:process_info(A),
-	    io:format("Process_info:~p ~n",[I]),
 	    exit(X,normal),
 	    halt(),
 	    exit(self(),normal)

@@ -1,4 +1,4 @@
-%% @author Linkan
+%% @author Grupp 2
 
 -module(grid).
 

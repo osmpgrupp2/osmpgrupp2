@@ -95,7 +95,7 @@ checker(Matrix,L,GameOver) ->
 			    io:format("krock med ett skott");
 			2 ->
 			    io:format("krock med ett meteor~n"),
-			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
+			    {boxarn,hoppsansa@ubuntu} ! {gameover},
 			    GameOver ! {self(),L},
 			    exit(self(),normal);
 			    %checker(Matrix,L,GameOver);
@@ -121,7 +121,7 @@ checker(Matrix,L,GameOver) ->
 			    io:format("krock med ett skott");
 			2 ->
 			    io:format("krock med ett meteor~n"), 
-			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
+			    {boxarn,hoppsansa@ubuntu} ! {gameover},
 			    GameOver ! {self(),L},
 			    exit(self(),normal);
 			    %checker(Matrix,L,GameOver);
@@ -174,7 +174,7 @@ checker(Matrix,L,GameOver) ->
 			    checker(Matrix,L,GameOver);
 			3 -> 
 			    io:format("Gammal meteor, krock med ett skepp~n"),
-			    %{boxarn,hoppsansa@ubuntu} ! {gameover},
+			    {boxarn,hoppsansa@ubuntu} ! {gameover},
 			    GameOver ! {self(),L},
 			    exit(self(),normal);
 			    %checker(Matrix,L,GameOver);
@@ -330,7 +330,7 @@ checker(Matrix,L,GameOver) ->
 
 meteorCreator(CheckerStart,X) ->
     timer:sleep(800),    
-    O = ((X rem 51) +1),   %10 
+    O = random:uniform(51),   %10 
     MeteorPID = spawn_link(kon,spawnMeteor,[CheckerStart]),
     CheckerStart ! {meteor,{O,1},MeteorPID,1},
     meteorCreator(CheckerStart,O).
