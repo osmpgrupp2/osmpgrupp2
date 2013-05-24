@@ -21,7 +21,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 	public static int gameWidth = 1000;
 	private GameBoard gameBoard;
 
-	private static int spaceshipX = 26;
+	private static int spaceshipX = 26; //26
 	private boolean gameOver = false;
 
 	private static Image off;
@@ -48,9 +48,9 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			PlaySound ps = new PlaySound();
 			ps.run();
 			background = ImageIO.read(new File("space1.jpg"));
-			ship = ImageIO.read(new File("vitt.jpg"));
-			shot = ImageIO.read(new File("green.jpg"));
-			meteor = ImageIO.read(new File("meteor.jpg"));
+			ship = ImageIO.read(new File("Skeppet.png"));
+			shot = ImageIO.read(new File("skottet.png"));
+			meteor = ImageIO.read(new File("kometen.png"));
 			gameover = ImageIO.read(new File("gameover.jpg"));
 		} catch (IOException e) {
 		}
@@ -118,7 +118,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				if(type.equals(new OtpErlangAtom("ship"))){
 					OtpErlangAtom direction = (OtpErlangAtom) arg;
 					if(direction.equals(new OtpErlangAtom("left"))){
-						gameBoard.moveSpaceShip(-(20));
+						gameBoard.moveSpaceShip(-(20)); 
 					}
 					else{ //direction == right
 						gameBoard.moveSpaceShip(20); 
@@ -126,15 +126,13 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 				}
 				else if(type.equals(new OtpErlangAtom("meteor"))){ 
 					
-					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), (gameHeight/51)); // VA SKA DET VARA HÄR?
-					
-					//gameBoard.moveMeteor(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), -10);
+					gameBoard.moveMeteor(((OtpErlangPid)arg).toString(), (gameHeight/51)); // 51
 				}
-				else{ //type == shot
+				else{
 					
-					gameBoard.moveShot(((OtpErlangPid)arg).toString(), -(gameHeight/51)); // 
+					gameBoard.moveShot(((OtpErlangPid)arg).toString(), -(gameHeight/51)); // 51
 					
-					//gameBoard.moveShot(((OtpErlangPid)((OtpErlangTuple)arg).elementAt(0)).toString(), gameHeight / 10);
+					
 				}
 			}
 			repaint();
@@ -253,9 +251,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			System.out.print("left" + spaceshipX);
 			sends[1] = new OtpErlangInt(spaceshipX);
 			sends[2] = new OtpErlangInt(0);
-			/*sends[1] = new OtpErlangInt((gameBoard.getSpaceShipX()/100));
-			sends[2] = new OtpErlangInt((gameBoard.getSpaceShipY()/100));
-			 */
+			
 			if(spaceshipX == 0){
 				spaceshipX = 1;
 			}
@@ -276,14 +272,11 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			sends[1] = new OtpErlangInt(spaceshipX);
 			sends[2] = new OtpErlangInt(0);
 			
-			if(spaceshipX == 52){
-				spaceshipX = 51;
+			if(spaceshipX == 52){ //52
+				spaceshipX = 51;  //51
 			}
 
-			/*
-			sends[1] = new OtpErlangInt((gameBoard.getSpaceShipX()/100));
-			sends[2] = new OtpErlangInt((gameBoard.getSpaceShipY()/100));
-			 */
+			
 
 			tuup = new OtpErlangTuple(sends);
 
