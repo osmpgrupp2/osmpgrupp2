@@ -55,3 +55,7 @@ docerlang: comp $(BEAM_FILES)
 	erl -noshell -eval "edoc:files($(EDOC_SRC_LIST), [{dir, 'doc/html'}])" -s init stop
 docjava: src/*.java
 	javadoc -d doc/javahtml src/*.java
+
+
+test: $(BEAM_FILES)
+	(erl -noinput -eval 'eunit:test({dir, "."}, [verbose]), init:stop()')
