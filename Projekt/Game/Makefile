@@ -1,4 +1,8 @@
-# Tex settings
+##################
+GROUP_NUMBER := 02
+##################
+
+
 ERLANG_COMPILER = erlc
 JAVA_GO 	= java
 JAVA_COMPILER   = javac
@@ -59,3 +63,23 @@ docjava: src/*.java
 
 test: $(BEAM_FILES)
 	(erl -noinput -eval 'eunit:test({dir, "."}, [verbose]), init:stop()')
+
+
+
+archive: #clean
+ifeq ($(REQUIRED_DIR_NAME), $(PROJECT_DIR))
+	(cd $(ARCHIVE_DIR) && tar cvfz $(ARCHIVE_NAME) $(PROJECT_DIR) )
+	@echo 
+	@echo NOTE: Archive created in $(ARCHIVE_DIR)/$(ARCHIVE_NAME)
+	@echo 
+else
+	@echo Error: Wrong directory name >$(PROJECT_DIR)<, change to >$(REQUIRED_DIR_NAME)<
+endif
+
+REQUIRED_DIR_NAME := pop_2013_project_group_$(GROUP_NUMBER)
+
+PROJECT_DIR := $(notdir $(shell pwd))
+
+USER=$(shell whoami)
+ARCHIVE_NAME :=  $(REQUIRED_DIR_NAME)_archive_$(USER)_$(shell date "+%Y-%m-%d__%H:%M:%S")__.tar.gz
+ARCHIVE_DIR := ..
