@@ -190,6 +190,7 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			d.setFont(new Font("TimesRoman", Font.PLAIN, 30));
 			d.setColor(new Color(255,0,0));
 			d.drawString("" + gameBoard.getScore(), gameWidth/2, gameHeight - 50);
+			d.drawString("press q to exit!", gameWidth/2 -100, gameHeight - 20);
 		}
 		else{
 
@@ -300,6 +301,10 @@ public class GameLoop extends Applet implements Runnable, KeyListener{
 			MyBox.send(erlangpid, tuup);
 
 			break;
+		
+		case KeyEvent.VK_Q:
+			if(gameOver)
+				System.exit(0);
 		}
 	}
 	@Override
